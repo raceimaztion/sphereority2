@@ -7,7 +7,7 @@ import common.*;
  * This includes players, projectiles, etc.
  * @author dvanhumb
  */
-public abstract class Actor
+public abstract class Actor implements ActorConstants
 {
 	/**
 	 * The current position of this Actor
@@ -25,6 +25,10 @@ public abstract class Actor
 	 * Indicates whether this actor is done and needs to be removed from the system
 	 */
 	private boolean needsRemoving;
+    /**
+     * The team to which this Actor belongs
+     */
+    private byte team;
 	
 	public Actor()
 	{
@@ -32,7 +36,21 @@ public abstract class Actor
 		velocity = new Position();
 		size = new Position(1, 1);
 		needsRemoving = false;
+        team = TEAMLESS_CODE;
 	}
+    
+    public Actor(Position position)
+    {
+        this();
+        this.position = position;
+    }
+    
+    public Actor(Position position, Position size)
+    {
+        this();
+        this.position = position;
+        this.size = size;
+    }
 	
 	/**
 	 * @return The current position of this Actor
@@ -67,4 +85,40 @@ public abstract class Actor
 	{
 		return needsRemoving;
 	}
+    
+    /**
+     * The code for the team this Actor is on
+     * @return The raw team code
+     */
+    public byte getTeam()
+    {
+        return team;
+    }
+    
+    /**
+     * Returns true if this Actor is on team A
+     * @return
+     */
+    public boolean isTeamA()
+    {
+        return team == TEAM_A_CODE;
+    }
+    
+    /**
+     * Returns true if this Actor is on team B
+     * @return
+     */
+    public boolean isTeamB()
+    {
+        return team == TEAM_B_CODE;
+    }
+    
+    /**
+     * Returns true if this Actor has no team
+     * @return
+     */
+    public boolean isTeamless()
+    {
+        return !isTeamA() && !isTeamB();
+    }
 }
