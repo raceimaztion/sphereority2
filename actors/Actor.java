@@ -121,4 +121,14 @@ public abstract class Actor implements ActorConstants
     {
         return !isTeamA() && !isTeamB();
     }
+    
+    /**
+     * Move this Actor in a direction
+     * @param dist  The direction to move by
+     * @param dTime  The amount of time that's elapsed since last timer tick
+     */
+    public void move(Position dist, float dTime)
+    {
+       position = position.move(dist, dTime); 
+    }
 }

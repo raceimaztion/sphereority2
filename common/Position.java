@@ -37,18 +37,72 @@ public class Position
 		y = p.y;
 	}
 	
+    /**
+     * Get the x-coordinate of this Position
+     * @return
+     */
 	public float getX()
 	{
 		return x;
 	}
 	
+    /**
+     * Get the y-coordinate of this Position
+     * @return
+     */
 	public float getY()
 	{
 		return y;
 	}
 	
-	public Position scale(float c)
+    /**
+     * Scale this Position by a specified amount
+     * @param s  The scaling factor
+     * @return  A scaled copy of this Position
+     */
+	public Position scale(float s)
 	{
-		return new Position(x*c, y*c);
+		return new Position(x*s, y*s);
 	}
+    
+    /**
+     * Move this Position by another Position
+     * @param p  The Position to move by
+     * @return  A moved copy of this Position
+     */
+    public Position add(Position p)
+    {
+        return new Position(x+p.x, y+p.y);
+    }
+    
+    /**
+     * Move this Position by a fraction of another Position
+     * @param p  The Position to move by
+     * @param s  The amount of the Position to move by
+     * @return  A moved copy of this Position
+     */
+    public Position move(Position p, float s)
+    {
+        return new Position(x + s*p.x, y + s*p.y);
+    }
+    
+    /**
+     * @return  The distance from this Position to (0, 0)
+     */
+    public float getLength()
+    {
+        return (float)Math.sqrt(x*x + y*y);
+    }
+    
+    /**
+     * Points this Position in the direction of another Position
+     * @param p  The Position to point at.
+     * @return  A copy of this Position moved by the given amount
+     */
+    public Position pointAt(Position p)
+    {
+        float scale = getLength()/p.getLength();
+        
+        return new Position(p.x*scale, p.y*scale);
+    }
 }
