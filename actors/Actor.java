@@ -131,4 +131,13 @@ public abstract class Actor implements ActorConstants
     {
        position = position.move(dist, dTime); 
     }
+    
+    /**
+     * Apply the current velocity to this Actor's Position
+     * @param dTime  The amount of time that elapsed since the last timer tick
+     */
+    public void move(float dTime)
+    {
+        move(velocity, dTime);
+    }
 }

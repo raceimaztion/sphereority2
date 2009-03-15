@@ -27,4 +27,9 @@ public interface ActorConstants
      * The default size for Actors, in world units
      */
     public static final Position DEFAULT_ACTOR_SIZE = new Position(1, 1);
+    
+    /**
+     * The default weight WeightedActors take
+     */
+    public static final float DEFAULT_WEIGHT = 1.0f;
 }
