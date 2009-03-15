@@ -12,5 +12,10 @@ public interface Animatible
 	 * @param dTime  The amount of time that has passed since the last timer tick, in seconds
 	 * @return  Return true if it has moved and needs to be repainted, false otherwise
 	 */
-	public boolean animate(float curTime, float dTime);
+	public void animate(float curTime, float dTime);
+	
+	/**
+	 * Returns true if this Actor has moved or otherwise needs the screen to repaint
+	 */
+	public boolean needsUpdate();
 }

@@ -22,8 +22,8 @@ public abstract class WeightedActor extends Actor implements Animatible
         return weight;
     }
     
-    public boolean animate(float curTime, float dTime)
+    public void animate(float curTime, float dTime)
     {
-        return false;
+    	
     }
 }

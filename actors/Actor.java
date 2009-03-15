@@ -35,14 +35,26 @@ public abstract class Actor implements ActorConstants
 		position = new Position();
 		velocity = new Position();
 		size = new Position(1, 1);
-		needsRemoving = false;
         team = TEAMLESS_CODE;
+        
+        setup();
 	}
     
     public Actor(Position position)
     {
         this();
         this.position = position;
+        
+        setup();
+    }
+    
+    private void setup()
+    {
+    	needsRemoving = false;
+    	
+    	// TODO: If we're Animatible, register us with the time system
+    	if (this instanceof Animatible)
+    		timers.TimerSystem.getTimerSystem().addTimer((Animatible)this);
     }
     
     public Actor(Position position, Position size)
