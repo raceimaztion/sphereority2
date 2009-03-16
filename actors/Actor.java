@@ -152,4 +152,14 @@ public abstract class Actor implements ActorConstants
     {
         move(velocity, dTime);
     }
+    
+    /**
+     * Accelerate by a particular amount
+     * @param p  The direction to accelerate in
+     * @param dTime  The amount of the acceleration to apply
+     */
+    public void accelerate(Position p, float dTime)
+    {
+    	velocity = velocity.move(p, dTime);
+    }
 }

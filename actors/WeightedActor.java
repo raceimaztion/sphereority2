@@ -1,5 +1,7 @@
 package actors;
 
+import common.*;
+
 public abstract class WeightedActor extends Actor implements Animatible
 {
     /**
@@ -22,8 +24,8 @@ public abstract class WeightedActor extends Actor implements Animatible
         return weight;
     }
     
-    public void animate(float curTime, float dTime)
+    public void accelerate(Position direction, float dTime)
     {
-    	
+    	super.accelerate(direction, dTime/weight);
     }
 }
