@@ -5,7 +5,7 @@ import common.*;
 public abstract class WeightedActor extends Actor implements Animatible
 {
     /**
-     * The weight of this Actor. The hevier it is, the slower it is to react to motion
+     * The weight of this Actor. The heavier it is, the slower it is to react to motion
      */
     private float weight;
     
@@ -24,8 +24,12 @@ public abstract class WeightedActor extends Actor implements Animatible
         return weight;
     }
     
+    /**
+     * Accelerate by a given amount, taking into consideration this Actor's weight.
+     */
     public void accelerate(Position direction, float dTime)
     {
+    	// The heavier we are, the slower we move
     	super.accelerate(direction, dTime/weight);
     }
 }

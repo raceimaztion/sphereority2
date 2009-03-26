@@ -1,6 +1,7 @@
 package settings;
 
 import java.util.HashMap;
+import java.util.Vector;
 
 /*
  * TODO: Create a user interface to add, remove, and modify settings dynamically
@@ -17,17 +18,18 @@ public class Settings
 	private static Settings singleton = null;
 	
 	private HashMap<String, Object> storedSettings;
+	private Vector<SettingListener> settingListeners;
 	
 	private Settings()
 	{
 		storedSettings = new HashMap<String, Object>();
 		
-		// Load the settings
+		// TODO: Load the settings
 	}
 	
 	/**
 	 * Get the single instance of the Settings class
-	 * @return
+	 * @return The global Settings
 	 */
 	public static Settings getSettings()
 	{
@@ -41,7 +43,7 @@ public class Settings
 	 */
 	public void storeSettings()
 	{
-		
+		// TODO: Store all settings
 	}
 	
 	/**
@@ -52,5 +54,30 @@ public class Settings
 	public Object getValue(String key)
 	{
 		return storedSettings.get(key);
+	}
+	
+	/**
+	 * Update the specified setting
+	 * @param key  The String name of the setting to change
+	 * @param value  The value to store at the specified key
+	 */
+	public void setValue(String key, Object value)
+	{
+		// Signal all setting listeners
+		for (SettingListener sl : settingListeners)
+			sl.settingChanged(key, storedSettings.get(key), value);
+		
+		// Update setting
+		storedSettings.put(key, value);
+	}
+	
+	public void addSettingListener(SettingListener listener)
+	{
+		settingListeners.add(listener);
+	}
+	
+	public void removeSettingListener(SettingListener listener)
+	{
+		settingListeners.remove(listener);
 	}
 }
