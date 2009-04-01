@@ -11,7 +11,9 @@ import java.util.Vector;
  *   '+'		Walls
  *   ' ', '.'	Empty spaces
  *   'f', 'F'	A flag
- *   's', 'S'	Spawn points. If only one "casedness" is used, any player can spawn at any point, else team 1 can spawn on 's' and vice versa
+ *   's', 'S'	Spawn points. If only one "casedness" is used, any player can spawn at any point,
+ *                  else team 1 can spawn on 's' and vice versa, while teamless players can still
+ *                  spawn anywhere
  * @author dvanhumb
  */
 public class GameMap
@@ -21,7 +23,8 @@ public class GameMap
 	private Vector<SpawnPoint> spawnPointsA, spawnPointsB;
 	private Vector<FlagPoint> flagPointsA, flagPointsB;
 	private int width, height;
-	private boolean[][] walls;
+	private String mapData;
+	protected boolean[][] walls;
 	private String mapName;
 	
 	/**
@@ -32,6 +35,7 @@ public class GameMap
 	public GameMap(String mapName, String map)
 	{
 		this.mapName = mapName;
+		mapData = map;
 		parseData(new Scanner(map));
 	}
 	
@@ -44,6 +48,29 @@ public class GameMap
 	public GameMap(String mapName) throws IOException, FileNotFoundException
 	{
 		this.mapName = mapName;
+		mapData = null;
+		parseData(new Scanner(new File(String.format("map/%s.map", mapName))));
+	}
+	
+	/**
+	 * Duplicate a pre-existing map
+	 * @param map The map to duplicate
+	 */
+	public GameMap(GameMap map)
+	{
+		mapName = map.mapName;
+		width = map.width;
+		height = map.height;
+		spawnPointsA = new Vector<SpawnPoint>(map.spawnPointsA);
+		spawnPointsB = new Vector<SpawnPoint>(map.spawnPointsB);
+		flagPointsA = new Vector<FlagPoint>(map.flagPointsA);
+		flagPointsB = new Vector<FlagPoint>(map.flagPointsB);
+		mapData = map.mapData;
+		// Copy the walls
+		walls = new boolean[width][height];
+		for (int y=0; y < height; y++)
+			for (int x=0; x < width; x++)
+				walls[x][y] = map.walls[x][y];
 	}
 	
 	private void parseData(Scanner mapData)
@@ -57,10 +84,12 @@ public class GameMap
 		
 		mapData.nextLine();
 		
-		String line;
+		String line, data = "";
 		for (int y=0; y < height; y++)
 		{
 			line = mapData.nextLine();
+			data += line;
+			
 			for (int x=0; x < width; x++)
 			{
 				if (line.charAt(x) == '+')
@@ -90,6 +119,9 @@ public class GameMap
 			spawnPointsA = spawnPointsB;
 		else if (spawnPointsB.size() == 0)
 			spawnPointsB = spawnPointsA;
+		
+		if (this.mapData == null)
+			this.mapData = data;
 	}
 	
 	/**
@@ -127,7 +159,10 @@ public class GameMap
 	 */
 	public boolean isWall(int x, int y)
 	{
-		return walls[x][y];
+		if (isValidPosition(x, y))
+			return walls[x][y];
+		else
+			return false;
 	}
 	
 	/**
@@ -144,5 +179,21 @@ public class GameMap
 	public int getHeight()
 	{
 		return height;
+	}
+	
+	/**
+	 * Find out if a particular position is valid or inside the map.
+	 * @param x  The x-coordinate of the position we're interested in
+	 * @param y  The y-coordinate of the position we're interested in
+	 * @return  Returns true if the specified position is inside the map
+	 */
+	public boolean isValidPosition(int x, int y)
+	{
+		return !((x < 0) || (y < 0) || (x >= width) || (y >= height));
+	}
+	
+	public String toString()
+	{
+		return mapData;
 	}
 }

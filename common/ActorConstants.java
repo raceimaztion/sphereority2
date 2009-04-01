@@ -32,4 +32,9 @@ public interface ActorConstants
      * The default weight WeightedActors take
      */
     public static final float DEFAULT_WEIGHT = 1.0f;
+    
+    /**
+     * The length of a player's gun
+     */
+    public static final float PLAYER_AIM_LENGTH = 0.5f;
 }

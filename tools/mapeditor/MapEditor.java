@@ -1,8 +1,10 @@
-package tools;
+package tools.mapeditor;
+
+import java.awt.*;
+import javax.swing.*;
+
 
 import java.io.*;
-
-import javax.swing.*;
 
 /*
  * ' ', '.'		Empty spaces
@@ -23,6 +25,8 @@ import javax.swing.*;
 public class MapEditor
 {
 	private JFrame window;
+	private EditableMap map;
+	private MapView mapView;
 	
 	/**
 	 * Create the map editor window.
@@ -31,8 +35,16 @@ public class MapEditor
 	 */
 	public MapEditor()
 	{
+		map = null;
+		
 		window = new JFrame("Sphereorit2: Map editor");
 		window.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+		
+		mapView = new MapView();
+		JScrollPane scroller = new JScrollPane(mapView);
+		window.getContentPane().add(scroller, BorderLayout.CENTER);
+		
+		window.pack();
 	}
 	
 	public void show()
@@ -63,13 +75,7 @@ public class MapEditor
 	{
 		try
 		{
-			BufferedReader in = new BufferedReader(new FileReader(String.format("maps/%s.map", name)));
-			String line = in.readLine(), map = "";
-			while (line != null)
-			{
-				map += line;
-				line = in.readLine();
-			}
+			map = new EditableMap(name);
 		}
 		catch (FileNotFoundException er)
 		{
@@ -83,6 +89,46 @@ public class MapEditor
 	
 	public static void main(String[] args)
 	{
-		// TODO: Launch map editing from the command-line
+		if (args.length < 1)
+		{
+			MapEditor me = new MapEditor();
+			me.show();
+		}
+		else
+		{
+			// TODO: Figure out how to show multiple windows without having them use the same painting thread
+			System.out.println("Loading map files from command-line not yet possible.");
+		}
+	}
+	
+	private class MapView extends JComponent
+	{
+		private static final long serialVersionUID = 198753L;
+		
+		private int zoomLevel;
+		
+		protected MapView()
+		{
+			setZoomLevel(8);
+		}
+		
+		public void setZoomLevel(int level)
+		{
+			if (level < 1)
+				return;
+			
+			zoomLevel = level;
+			Dimension d = new Dimension(zoomLevel*map.getWidth(), zoomLevel*map.getHeight());
+			setSize(d);
+			setPreferredSize(d);
+			setMinimumSize(d);
+			revalidate();
+			repaint();
+		}
+		
+		public void paintComponent(Graphics g)
+		{
+			
+		}
 	}
 }
