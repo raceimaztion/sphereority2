@@ -16,7 +16,7 @@ import java.util.Vector;
  *                  spawn anywhere
  * @author dvanhumb
  */
-public class GameMap
+public class GameMap implements MapConstants
 {
 	private static final Random RANDOM = new Random();
 	

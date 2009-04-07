@@ -43,6 +43,42 @@ public class EditableMap extends GameMap
 	}
 	
 	/**
+	 * Create a new, empty map
+	 * @param mapName  The name of this new map
+	 * @param width  The width of this new map
+	 * @param height  The height of this new map
+	 */
+	public EditableMap(String mapName, int width, int height)
+	{
+		super(mapName, createEmpty(width, height));
+	}
+	
+	private static String createEmpty(int width, int height)
+	{
+		String map = String.format("%s %s\n", width, height);
+		
+		String line = "";
+		for (int i=0; i < width; i++)
+			line += CHAR_WALL;
+		line += '\n';
+		
+		line += CHAR_WALL;
+		for (int y=2; y < height; y++)
+		{
+			for (int i=2; i < width; i++)
+				line += ' ';
+			line += CHAR_WALL;
+			line += '\n';
+		}
+		
+		for (int i=0; i < width; i++)
+			line += CHAR_WALL;
+		line += '\n';
+		
+		return map;
+	}
+	
+	/**
 	 * Change a wall at a particular location
 	 * @param x  The x-coordinate of the wall to change
 	 * @param y  The y-coordinate of the wall to change

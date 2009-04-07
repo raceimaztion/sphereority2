@@ -137,21 +137,21 @@ public class MapEditor implements ActionListener
 		}
 		else if (source.equals(menuSave))
 		{
-			if (map != null)
+			if (map == null)
+				return;
+			try
 			{
-				try
-				{
-					map.save();
-				}
-				catch (IOException er)
-				{
-					JOptionPane.showMessageDialog(window, String.format("Error saving map named %s.\nError was:\n%s", map.getName(), er.toString()), "Sphereority 2 Map Editor", JOptionPane.ERROR_MESSAGE);
-				}
+				map.save();
+			}
+			catch (IOException er)
+			{
+				JOptionPane.showMessageDialog(window, String.format("Error saving map named %s.\nError was:\n%s", map.getName(), er.toString()), "Sphereority 2 Map Editor", JOptionPane.ERROR_MESSAGE);
 			}
 		}
 		else if (source.equals(menuSaveAs))
 		{
-			
+			if (map == null)
+				return;
 		}
 		else if (source.equals(menuQuit))
 		{
