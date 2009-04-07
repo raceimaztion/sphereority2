@@ -12,22 +12,11 @@ public class MapView extends JComponent implements MapAlterationListener
 	
 	public MapView()
 	{
-		
+		zoomLevel = 8;
 	}
 	
-	public void setMap(EditableMap map)
+	private void updateSize()
 	{
-		this.map = map;
-		
-	}
-	
-	public void setZoomLevel(int level)
-	{
-		if (level < 1)
-			return;
-		
-		zoomLevel = level;
-		
 		if (map == null)
 			return;
 		
@@ -37,6 +26,23 @@ public class MapView extends JComponent implements MapAlterationListener
 		setMinimumSize(d);
 		revalidate();
 		repaint();
+	}
+	
+	public void setMap(EditableMap map)
+	{
+		this.map = map;
+		
+		updateSize();
+	}
+	
+	public void setZoomLevel(int level)
+	{
+		if (level < 1)
+			return;
+		
+		zoomLevel = level;
+		
+		updateSize();
 	}
 	
 	public int getZoomLevel()
@@ -55,6 +61,15 @@ public class MapView extends JComponent implements MapAlterationListener
 		
 		// Figure out the bounds of the redraw rectangle
 		Rectangle clipBounds = g2.getClipBounds();
+		
+		// If we don't have a map, draw the background blank and return
+		if (map == null)
+		{
+			g2.setColor(getBackground());
+			g2.fill(g2.getClip());
+			return;
+		}
+		
 		int min_x, min_y, max_x, max_y;
 		min_x = Math.max(clipBounds.x / zoomLevel - 1, 0);
 		max_x = Math.min((clipBounds.x + clipBounds.width) / zoomLevel + 1, map.getWidth() - 1);
@@ -65,13 +80,17 @@ public class MapView extends JComponent implements MapAlterationListener
 		for (int y = min_y; y <= max_y; y++)
 			for (int x = min_x; x <= max_x; x++)
 			{
-				
+				// TODO: Draw each cell in the grid
 			}
 		
 		// Draw a grid if we're zoomed in enough
 		if (zoomLevel >= 8)
 		{
-			
+			g2.setColor(Color.black);
+			for (int x=min_x+(min_x%zoomLevel); x < max_x; x+=zoomLevel)
+				g2.drawLine(x, min_y, x, max_y);
+			for (int y=min_y+(min_y%zoomLevel); y < max_y; y+=zoomLevel)
+				g2.drawLine(min_x, y, max_x, y);
 		}
 	}
 

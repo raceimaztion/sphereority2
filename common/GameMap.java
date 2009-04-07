@@ -20,12 +20,12 @@ public class GameMap
 {
 	private static final Random RANDOM = new Random();
 	
-	private Vector<SpawnPoint> spawnPointsA, spawnPointsB;
-	private Vector<FlagPoint> flagPointsA, flagPointsB;
+	protected Vector<SpawnPoint> spawnPointsA, spawnPointsB;
+	protected Vector<FlagPoint> flagPointsA, flagPointsB;
 	private int width, height;
-	private String mapData;
+	protected String mapData;
 	protected boolean[][] walls;
-	private String mapName;
+	protected String mapName;
 	
 	/**
 	 * Create an instance of a map from a string that somebody passed to us 

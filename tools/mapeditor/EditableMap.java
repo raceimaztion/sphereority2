@@ -1,6 +1,6 @@
 package tools.mapeditor;
 
-import common.GameMap;
+import common.*;
 
 import java.io.*;
 import java.util.Vector;
@@ -61,7 +61,7 @@ public class EditableMap extends GameMap
 	
 	/**
 	 * Adds a map alteration listener
-	 * @param listener The listener to add
+	 * @param listener  The listener to add
 	 */
 	public void addMapChangeListener(MapAlterationListener listener)
 	{
@@ -69,11 +69,87 @@ public class EditableMap extends GameMap
 	}
 	
 	/**
-	 * 
-	 * @param listener
+	 * Removes a map alteration listener
+	 * @param listener  The listener to remove
 	 */
 	public void removeMapChangeListener(MapAlterationListener listener)
 	{
 		listeners.remove(listener);
+	}
+	
+	/**
+	 * Set the map's name
+	 * @param name
+	 */
+	public void setName(String name)
+	{
+		mapName = name;
+	}
+	
+	/**
+	 * Save map to our internal list of maps
+	 */
+	public void save() throws IOException
+	{
+		FileWriter out = new FileWriter(String.format("maps/%s.map", getName()));
+		final int width = getWidth(), height = getHeight();
+		
+		// Write header
+		out.write(String.format("%d %d\n", width, height));
+		
+		// Write out map contents
+		char[][] data = new char[width][height];
+		for (int y=0; y < width; y++)
+			for (int x=0; x < height; x++)
+			{
+				if (walls[x][y])
+					data[x][y] = '+';
+				else
+					data[x][y] = '.';
+			}
+		
+		if (spawnPointsA != null)
+		{
+			for (SpawnPoint p : spawnPointsA)
+				data[p.getX()][p.getY()] = 's';
+			
+			if (spawnPointsB != null && spawnPointsB != spawnPointsA)
+			{
+				for (SpawnPoint p : spawnPointsB)
+					data[p.getX()][p.getY()] = 'S';
+			}
+		}
+		else if (spawnPointsB != null)
+		{
+			for (SpawnPoint p : spawnPointsB)
+				data[p.getX()][p.getY()] = 'S';
+		}
+		
+		if (flagPointsA != null)
+		{
+			for (FlagPoint p : flagPointsA)
+				data[p.getX()][p.getY()] = 'f';
+			
+			if (flagPointsB != null && flagPointsB != flagPointsA)
+			{
+				for (FlagPoint p : flagPointsB)
+					data[p.getX()][p.getY()] = 'F';
+			}
+		}
+		else if (flagPointsB != null)
+		{
+			for (FlagPoint p : flagPointsB)
+				data[p.getX()][p.getY()] = 'F';
+		}
+		
+		for (int y=0; y < height; y++)
+		{
+			for (int x=0; x < width; x++)
+				out.write(data[x][y]);
+			out.write('\n');
+		}
+		
+		out.flush();
+		out.close();
 	}
 }
