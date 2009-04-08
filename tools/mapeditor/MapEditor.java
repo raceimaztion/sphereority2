@@ -2,10 +2,10 @@ package tools.mapeditor;
 
 import java.awt.*;
 import java.awt.event.*;
-
 import javax.swing.*;
-
 import java.io.*;
+
+import common.gui.*;
 
 /*
  * ' ', '.'		Empty spaces
@@ -23,7 +23,7 @@ import java.io.*;
  * Maybe this could be integrated into the game itself?
  * @author dvanhumb
  */
-public class MapEditor implements ActionListener
+public class MapEditor implements ActionListener, WindowListener
 {
 	private JFrame window;
 	private EditableMap map;
@@ -40,8 +40,9 @@ public class MapEditor implements ActionListener
 	{
 		map = null;
 		
-		window = new JFrame("Sphereorit2: Map editor");
+		window = new JFrame("Sphereorit2 - Map editor");
 		window.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+		window.addWindowListener(this);
 		
 		// Editing part of the window
 		mapView = new MapView();
@@ -76,7 +77,7 @@ public class MapEditor implements ActionListener
 	
 	private JMenuItem createMenuItem(String label, int mnemonic)
 	{
-		JMenuItem item = new JMenuItem(label, mnemonic);
+		JMenuItem item = new JMenuItem(label, label.charAt(mnemonic));
 		item.addActionListener(this);
 		
 		return item;
@@ -129,11 +130,33 @@ public class MapEditor implements ActionListener
 		
 		if (source.equals(menuNew))
 		{
-			// TODO: Show new map dialog
+			EditableMap m = NewMapDialog.createMap(window);
+			if (m != null)
+			{
+				map = m;
+				mapView.setMap(map);
+			}
 		}
 		else if (source.equals(menuOpen))
 		{
 			// TODO: Show open map dialog
+			String mapName = MapChooser.chooseMap();
+			if (mapName != null)
+			{
+				try
+				{
+					map = new EditableMap(mapName);
+					mapView.setMap(map);
+				}
+				catch (FileNotFoundException er)
+				{
+					er.printStackTrace();
+				}
+				catch (IOException er)
+				{
+					er.printStackTrace();
+				}
+			}
 		}
 		else if (source.equals(menuSave))
 		{
@@ -166,10 +189,32 @@ public class MapEditor implements ActionListener
 			MapEditor me = new MapEditor();
 			me.show();
 		}
+		else if (args.length < 2)
+		{
+			MapEditor me = new MapEditor();
+			me.loadMap(args[1]);
+			me.show();
+		}
 		else
 		{
 			// TODO: Figure out how to show multiple windows without having them use the same painting thread
-			System.out.println("Loading map files from command-line not yet possible.");
+			System.out.println("Loading multiple map files from command-line not yet possible.");
 		}
 	}
+	
+	// Called when the user wants to close the window
+	public void windowClosing(WindowEvent e)
+	{
+		// TODO: Display a dialog asking if we want to save the file, cancel closing the window, or quit
+		if (map.isDirty())
+			JOptionPane.showMessageDialog(window, "You haven't saved the map, all changes will be lost.", "Sphereority 2 - Map Editor", JOptionPane.WARNING_MESSAGE);
+		System.exit(0);
+	}
+	
+	public void windowClosed(WindowEvent e) { }
+	public void windowActivated(WindowEvent e) { }
+	public void windowDeactivated(WindowEvent e) { }
+	public void windowDeiconified(WindowEvent e) { }
+	public void windowIconified(WindowEvent e) { }
+	public void windowOpened(WindowEvent e) { }
 }

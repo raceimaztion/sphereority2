@@ -9,6 +9,7 @@ import java.util.Vector;
 public class EditableMap extends GameMap
 {
 	private Vector<MapAlterationListener> listeners;
+	private boolean dirty = false;
 	
 	/**
 	 * Load a map to edit from a file
@@ -57,23 +58,22 @@ public class EditableMap extends GameMap
 	{
 		String map = String.format("%s %s\n", width, height);
 		
-		String line = "";
 		for (int i=0; i < width; i++)
-			line += CHAR_WALL;
-		line += '\n';
+			map += CHAR_WALL;
+		map += "\n";
 		
-		line += CHAR_WALL;
 		for (int y=2; y < height; y++)
 		{
+			map += CHAR_WALL;
 			for (int i=2; i < width; i++)
-				line += ' ';
-			line += CHAR_WALL;
-			line += '\n';
+				map += ' ';
+			map += CHAR_WALL;
+			map += "\n";
 		}
 		
 		for (int i=0; i < width; i++)
-			line += CHAR_WALL;
-		line += '\n';
+			map += CHAR_WALL;
+		map += "\n";
 		
 		return map;
 	}
@@ -92,6 +92,8 @@ public class EditableMap extends GameMap
 			
 			for (MapAlterationListener mcl : listeners)
 				mcl.mapChanged(this, x, y);
+			
+			dirty = true;
 		}
 	}
 	
@@ -120,6 +122,8 @@ public class EditableMap extends GameMap
 	public void setName(String name)
 	{
 		mapName = name;
+		
+		dirty = true;
 	}
 	
 	/**
@@ -133,17 +137,13 @@ public class EditableMap extends GameMap
 		// Write header
 		out.write(String.format("%d %d\n", width, height));
 		
-		// Write out map contents
+		// "Unparse" map data
 		char[][] data = new char[width][height];
 		for (int y=0; y < width; y++)
 			for (int x=0; x < height; x++)
-			{
-				if (walls[x][y])
-					data[x][y] = '+';
-				else
-					data[x][y] = '.';
-			}
+				data[x][y] = '.';
 		
+		// Start with spawn points
 		if (spawnPointsA != null)
 		{
 			for (SpawnPoint p : spawnPointsA)
@@ -161,6 +161,7 @@ public class EditableMap extends GameMap
 				data[p.getX()][p.getY()] = 'S';
 		}
 		
+		// Now flag points
 		if (flagPointsA != null)
 		{
 			for (FlagPoint p : flagPointsA)
@@ -178,6 +179,14 @@ public class EditableMap extends GameMap
 				data[p.getX()][p.getY()] = 'F';
 		}
 		
+		// Now put the walls in overtop of everything else
+		for (int y=0; y < width; y++)
+			for (int x=0; x < height; x++)
+			{
+				if (walls[x][y])
+					data[x][y] = '+';
+			}
+		
 		for (int y=0; y < height; y++)
 		{
 			for (int x=0; x < width; x++)
@@ -185,7 +194,14 @@ public class EditableMap extends GameMap
 			out.write('\n');
 		}
 		
+		dirty = false;
+		
 		out.flush();
 		out.close();
+	}
+	
+	public boolean isDirty()
+	{
+		return dirty;
 	}
 }

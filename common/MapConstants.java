@@ -34,4 +34,16 @@ public interface MapConstants
 	 * The smallest height a map can be
 	 */
 	public static final int MINIMUM_HEIGHT = 8;
+	/**
+	 * The widest a map can be
+	 */
+	public static final int MAXIMUM_WIDTH = 4*1024;
+	/**
+	 * The tallest a map can be
+	 */
+	public static final int MAXIMUM_HEIGHT = 4*1024;
+	/**
+	 * How local maps are named
+	 */
+	public static final String LOCAL_MAP_NAMING = "maps/%s.map";
 }

@@ -14,9 +14,12 @@ public class MapChooser implements ActionListener
 	private DefaultListModel listModel;
 	private JButton buttonOkay, buttonCancel;
 	
+	private String selection = null;
+	
 	private MapChooser()
 	{
 		dialog = new JDialog();
+		dialog.setTitle("Sphereority 2 - Choose a map");
 		dialog.setModal(true);
 		dialog.getContentPane().setLayout(new BorderLayout());
 		
@@ -47,7 +50,23 @@ public class MapChooser implements ActionListener
 	
 	public void actionPerformed(ActionEvent e)
 	{
-		
+		if (e.getSource().equals(buttonOkay))
+		{
+			try
+			{
+				selection = (String)list.getSelectedValue();
+				dialog.setVisible(false);
+			}
+			catch (Throwable er)
+			{
+				er.printStackTrace();
+			}
+		}
+		else if (e.getSource().equals(buttonCancel))
+		{
+			selection = null;
+			dialog.setVisible(false);
+		}
 	}
 	
 	private void updateMapList()
@@ -62,7 +81,7 @@ public class MapChooser implements ActionListener
 			if (!f.canRead())
 				continue;
 			if (f.getName().endsWith(".map"))
-				listModel.addElement(f.getName().substring(f.getName().lastIndexOf('.')));
+				listModel.addElement(f.getName().substring(0, f.getName().lastIndexOf('.')));
 		}
 		
 		if (listModel.contains(selected))
@@ -71,15 +90,17 @@ public class MapChooser implements ActionListener
 	
 	private void show()
 	{
-		
+		list.grabFocus();
+		dialog.setVisible(true);
 	}
 	
 	public static String chooseMap()
 	{
 		if (singleton == null)
 			singleton = new MapChooser();
+		
 		singleton.show();
 		
-		return null;
+		return singleton.selection;
 	}
 }

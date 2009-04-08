@@ -12,7 +12,7 @@ public class MapView extends JComponent implements MapAlterationListener
 	
 	public MapView()
 	{
-		zoomLevel = 8;
+		zoomLevel = 16;
 	}
 	
 	private void updateSize()
@@ -70,11 +70,14 @@ public class MapView extends JComponent implements MapAlterationListener
 			return;
 		}
 		
+		g2.setColor(Color.white);
+		g2.fill(g2.getClip());
+		
 		int min_x, min_y, max_x, max_y;
 		min_x = Math.max(clipBounds.x / zoomLevel - 1, 0);
-		max_x = Math.min((clipBounds.x + clipBounds.width) / zoomLevel + 1, map.getWidth() - 1);
+		max_x = Math.min((clipBounds.x + clipBounds.width) / zoomLevel + 1, map.getWidth());
 		min_y = Math.max(clipBounds.y / zoomLevel - 1, 0);
-		max_y = Math.min((clipBounds.y + clipBounds.height) / zoomLevel + 1, map.getHeight() - 1);
+		max_y = Math.min((clipBounds.y + clipBounds.height) / zoomLevel + 1, map.getHeight());
 		
 		// Draw the map
 		for (int y = min_y; y <= max_y; y++)
@@ -87,10 +90,10 @@ public class MapView extends JComponent implements MapAlterationListener
 		if (zoomLevel >= 8)
 		{
 			g2.setColor(Color.black);
-			for (int x=min_x+(min_x%zoomLevel); x < max_x; x+=zoomLevel)
-				g2.drawLine(x, min_y, x, max_y);
-			for (int y=min_y+(min_y%zoomLevel); y < max_y; y+=zoomLevel)
-				g2.drawLine(min_x, y, max_x, y);
+			for (int x=min_x; x <= max_x; x++)
+				g2.drawLine(x*zoomLevel, min_y*zoomLevel, x*zoomLevel, max_y*zoomLevel);
+			for (int y=min_y; y <= max_y; y++)
+				g2.drawLine(min_x*zoomLevel, y*zoomLevel, max_x*zoomLevel, y*zoomLevel);
 		}
 	}
 

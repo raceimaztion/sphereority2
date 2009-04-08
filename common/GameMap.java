@@ -49,7 +49,7 @@ public class GameMap implements MapConstants
 	{
 		this.mapName = mapName;
 		mapData = null;
-		parseData(new Scanner(new File(String.format("map/%s.map", mapName))));
+		parseData(new Scanner(new File(String.format(LOCAL_MAP_NAMING, mapName))));
 	}
 	
 	/**
@@ -77,6 +77,7 @@ public class GameMap implements MapConstants
 	{
 		width = mapData.nextInt();
 		height = mapData.nextInt();
+		walls = new boolean[width][height];
 		spawnPointsA = new Vector<SpawnPoint>();
 		spawnPointsB = new Vector<SpawnPoint>();
 		flagPointsA = new Vector<FlagPoint>();
@@ -102,14 +103,14 @@ public class GameMap implements MapConstants
 					spawnPointsA.add(new SpawnPoint(x, y));
 				else if (line.charAt(x) == 'S')
 					spawnPointsB.add(new SpawnPoint(x, y));
-				// Anything else we ignore
+				// Anything else we ignore and treat as an empty space
 			}
 		}
 		
 		// If we have no spawn points, add some in
 		if ((spawnPointsA.size() == 0) && (spawnPointsB.size() == 0))
 		{
-			spawnPointsA = spawnPointsB;
+			spawnPointsB = spawnPointsA;
 			for (int y=0; y < height; y++)
 				for (int x=0; x < width; x++)
 					if (!walls[x][y])
