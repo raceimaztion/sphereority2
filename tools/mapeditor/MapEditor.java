@@ -40,13 +40,14 @@ public class MapEditor implements ActionListener, WindowListener
 	{
 		map = null;
 		
-		window = new JFrame("Sphereorit2 - Map editor");
+		window = new JFrame("Sphereority 2 - Map editor");
 		window.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 		window.addWindowListener(this);
 		
 		// Editing part of the window
 		mapView = new MapView();
 		JScrollPane scroller = new JScrollPane(mapView);
+		scroller.setPreferredSize(new Dimension(200, 160));
 		window.getContentPane().add(scroller, BorderLayout.CENTER);
 		
 		// Menus:
@@ -73,6 +74,7 @@ public class MapEditor implements ActionListener, WindowListener
 		mapMenu.add(menuQuit);
 		
 		window.pack();
+		window.setLocationByPlatform(true);
 	}
 	
 	private JMenuItem createMenuItem(String label, int mnemonic)
@@ -139,8 +141,7 @@ public class MapEditor implements ActionListener, WindowListener
 		}
 		else if (source.equals(menuOpen))
 		{
-			// TODO: Show open map dialog
-			String mapName = MapChooser.chooseMap();
+			String mapName = MapChooser.chooseMap(window);
 			if (mapName != null)
 			{
 				try
@@ -178,9 +179,28 @@ public class MapEditor implements ActionListener, WindowListener
 		}
 		else if (source.equals(menuQuit))
 		{
-			
+			tryQuit();
 		}
 	}
+	
+	public void tryQuit()
+	{
+		// TODO: Display a dialog asking if we want to save the file, cancel closing the window, or quit
+		System.exit(0);
+	}
+	
+	// Called when the user wants to close the window
+	public void windowClosing(WindowEvent e)
+	{
+		tryQuit();
+	}
+	
+	public void windowClosed(WindowEvent e) { }
+	public void windowActivated(WindowEvent e) { }
+	public void windowDeactivated(WindowEvent e) { }
+	public void windowDeiconified(WindowEvent e) { }
+	public void windowIconified(WindowEvent e) { }
+	public void windowOpened(WindowEvent e) { }
 	
 	public static void main(String[] args)
 	{
@@ -201,20 +221,4 @@ public class MapEditor implements ActionListener, WindowListener
 			System.out.println("Loading multiple map files from command-line not yet possible.");
 		}
 	}
-	
-	// Called when the user wants to close the window
-	public void windowClosing(WindowEvent e)
-	{
-		// TODO: Display a dialog asking if we want to save the file, cancel closing the window, or quit
-		if (map.isDirty())
-			JOptionPane.showMessageDialog(window, "You haven't saved the map, all changes will be lost.", "Sphereority 2 - Map Editor", JOptionPane.WARNING_MESSAGE);
-		System.exit(0);
-	}
-	
-	public void windowClosed(WindowEvent e) { }
-	public void windowActivated(WindowEvent e) { }
-	public void windowDeactivated(WindowEvent e) { }
-	public void windowDeiconified(WindowEvent e) { }
-	public void windowIconified(WindowEvent e) { }
-	public void windowOpened(WindowEvent e) { }
 }

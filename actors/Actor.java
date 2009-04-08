@@ -52,7 +52,6 @@ public abstract class Actor implements ActorConstants
     {
     	needsRemoving = false;
     	
-    	// TODO: If we're Animatible, register us with the time system
     	if (this instanceof Animatible)
     		timers.TimerSystem.getTimerSystem().addTimer((Animatible)this);
     }

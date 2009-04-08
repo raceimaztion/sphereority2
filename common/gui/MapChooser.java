@@ -3,7 +3,10 @@ package common.gui;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+
 import javax.swing.*;
+
+import common.GameMap;
 
 public class MapChooser implements ActionListener
 {
@@ -25,6 +28,7 @@ public class MapChooser implements ActionListener
 		
 		listModel = new DefaultListModel();
 		list = new JList(listModel);
+		list.setCellRenderer(new MapListRenderer());
 		
 		JScrollPane scroller = new JScrollPane(list);
 		scroller.setPreferredSize(new Dimension(80, 60));
@@ -43,6 +47,7 @@ public class MapChooser implements ActionListener
 		panel.add(buttonCancel);
 		
 		dialog.getContentPane().add(panel, BorderLayout.SOUTH);
+		dialog.getContentPane().add(new JLabel("Select a map:"), BorderLayout.NORTH);
 		
 		dialog.pack();
 		updateMapList();
@@ -55,6 +60,7 @@ public class MapChooser implements ActionListener
 			try
 			{
 				selection = (String)list.getSelectedValue();
+				selection = selection.substring(0, selection.lastIndexOf("(")).trim();
 				dialog.setVisible(false);
 			}
 			catch (Throwable er)
@@ -81,25 +87,41 @@ public class MapChooser implements ActionListener
 			if (!f.canRead())
 				continue;
 			if (f.getName().endsWith(".map"))
-				listModel.addElement(f.getName().substring(0, f.getName().lastIndexOf('.')));
+			{
+				try
+				{
+					String name = f.getName().substring(0, f.getName().lastIndexOf('.'));
+					GameMap map = new GameMap(name);
+					listModel.addElement(String.format("%s\t(%d,%d)", name, map.getWidth(), map.getHeight()));
+				}
+				catch (FileNotFoundException er)
+				{
+					er.printStackTrace();
+				}
+				catch (IOException er)
+				{
+					er.printStackTrace();
+				}
+			}
 		}
 		
 		if (listModel.contains(selected))
 			list.setSelectedValue(selected, true);
 	}
 	
-	private void show()
+	private void show(Component parent)
 	{
 		list.grabFocus();
+		dialog.setLocationRelativeTo(parent);
 		dialog.setVisible(true);
 	}
 	
-	public static String chooseMap()
+	public static String chooseMap(Component parent)
 	{
 		if (singleton == null)
 			singleton = new MapChooser();
 		
-		singleton.show();
+		singleton.show(parent);
 		
 		return singleton.selection;
 	}

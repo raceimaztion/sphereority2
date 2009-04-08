@@ -11,6 +11,10 @@ public interface MapConstants
 	 */
 	public static final char CHAR_WALL = '+';
 	/**
+	 * One character that represents an empty space
+	 */
+	public static final char CHAR_SPACE = '.';
+	/**
 	 * The character that represents a spawn point for team 1
 	 */
 	public static final char CHAR_SPAWN_A = 's';

@@ -20,12 +20,12 @@ public class GameMap implements MapConstants
 {
 	private static final Random RANDOM = new Random();
 	
-	protected Vector<SpawnPoint> spawnPointsA, spawnPointsB;
-	protected Vector<FlagPoint> flagPointsA, flagPointsB;
+	private Vector<SpawnPoint> spawnPointsA, spawnPointsB;
+	private Vector<FlagPoint> flagPointsA, flagPointsB;
 	private int width, height;
-	protected String mapData;
-	protected boolean[][] walls;
-	protected String mapName;
+	private String mapData;
+	private boolean[][] walls;
+	private String mapName;
 	
 	/**
 	 * Create an instance of a map from a string that somebody passed to us 

@@ -1,18 +1,25 @@
 package tools.mapeditor;
 
+import common.MapConstants;
 import java.awt.*;
+import java.awt.event.*;
 import javax.swing.*;
 
-public class MapView extends JComponent implements MapAlterationListener
+public class MapView extends JComponent implements MapAlterationListener, MouseListener, MouseMotionListener
 {
 	private static final long serialVersionUID = 98234532L;
 	
 	private EditableMap map;
 	private int zoomLevel;
+	private Rectangle selection;
+	private int pinned_x = 0, pinned_y = 0;
 	
 	public MapView()
 	{
 		zoomLevel = 16;
+		
+		addMouseListener(this);
+		addMouseMotionListener(this);
 	}
 	
 	private void updateSize()
@@ -80,10 +87,21 @@ public class MapView extends JComponent implements MapAlterationListener
 		max_y = Math.min((clipBounds.y + clipBounds.height) / zoomLevel + 1, map.getHeight());
 		
 		// Draw the map
-		for (int y = min_y; y <= max_y; y++)
-			for (int x = min_x; x <= max_x; x++)
+		for (int y = min_y; y < max_y; y++)
+			for (int x = min_x; x < max_x; x++)
 			{
 				// TODO: Draw each cell in the grid
+				char c = map.getSquareType(x, y);
+				if (c == MapConstants.CHAR_WALL)
+					g2.setColor(Color.darkGray);
+				else if (c == MapConstants.CHAR_FLAG_A || c == MapConstants.CHAR_FLAG_B)
+					g2.setColor(Color.orange);
+				else if (c == MapConstants.CHAR_SPAWN_A || c == MapConstants.CHAR_SPAWN_B)
+					g2.setColor(Color.yellow);
+				else // it's a wall
+					g2.setColor(Color.white);
+				
+				g2.fillRect(x*zoomLevel, y*zoomLevel, zoomLevel, zoomLevel);
 			}
 		
 		// Draw a grid if we're zoomed in enough
@@ -95,13 +113,108 @@ public class MapView extends JComponent implements MapAlterationListener
 			for (int y=min_y; y <= max_y; y++)
 				g2.drawLine(min_x*zoomLevel, y*zoomLevel, max_x*zoomLevel, y*zoomLevel);
 		}
+		
+		// Draw the current selection, if we have one
+		if (selection != null)
+		{
+			g2.setColor(Color.green);
+			g2.drawRect(selection.x*zoomLevel,
+					selection.y*zoomLevel,
+					selection.width*zoomLevel,
+					selection.height*zoomLevel);
+		}
 	}
 
 	public void mapChanged(EditableMap map, int x, int y)
 	{
 		if (map == this.map)
+			repaintCell(x, y);
+	}
+	
+	public void repaintCell(int x, int y)
+	{
+		repaint(zoomLevel*x, zoomLevel*y, zoomLevel+1, zoomLevel+1);
+	}
+	
+	public void repaintCells(Rectangle rect)
+	{
+		if (rect != null)
+		repaint(rect.x*zoomLevel, rect.y*zoomLevel, rect.width*zoomLevel + 1, rect.height*zoomLevel + 1);
+	}
+	
+	public void repaintCells(int x, int y, int width, int height)
+	{
+		repaint(zoomLevel*x, zoomLevel*y, width*zoomLevel+1, height*zoomLevel+1);
+	}
+	
+	public void mouseClicked(MouseEvent e)
+	{
+		int x = e.getX(), y = e.getY();
+		x /= zoomLevel;
+		y /= zoomLevel;
+		
+		Rectangle rect = null;
+		if (selection != null)
+			rect = new Rectangle(selection);
+		selection = new Rectangle(x, y, 1, 1);
+		
+		repaintCells(rect);
+		repaintCells(selection);
+	}
+
+	public void mouseEntered(MouseEvent e) { }
+
+	public void mouseExited(MouseEvent e) { }
+
+	public void mousePressed(MouseEvent e)
+	{
+		int x = e.getX(), y = e.getY();
+		x /= zoomLevel;
+		y /= zoomLevel;
+		pinned_x = x;
+		pinned_y = y;
+		
+		Rectangle rect = null;
+		if (selection != null)
+			rect = new Rectangle(selection);
+		selection = new Rectangle(x, y, 1, 1);
+		
+		repaintCells(rect);
+		repaintCells(selection);
+	}
+
+	public void mouseReleased(MouseEvent e)
+	{
+		
+	}
+
+	public void mouseDragged(MouseEvent e)
+	{
+		int x = e.getX(), y = e.getY();
+		x /= zoomLevel;
+		y /= zoomLevel;
+		
+		int width = x - pinned_x, height = y - pinned_y;
+		Rectangle rect = new Rectangle(selection);
+		
+		if (width < 0)
+			selection.x = pinned_x + width;
+		else
+			selection.x = pinned_x;
+		if (height < 0)
+			selection.y = pinned_y + height;
+		else
+			selection.y = pinned_y;
+		
+		selection.width = 1 + Math.abs(width);
+		selection.height = 1 + Math.abs(height);
+		
+		if (!rect.equals(selection))
 		{
-			repaint(zoomLevel*x, zoomLevel*y, zoomLevel, zoomLevel);
+			repaintCells(rect);
+			repaintCells(selection);
 		}
 	}
+
+	public void mouseMoved(MouseEvent e) { }
 }
