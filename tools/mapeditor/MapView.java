@@ -1,8 +1,10 @@
 package tools.mapeditor;
 
 import common.MapConstants;
+
 import java.awt.*;
 import java.awt.event.*;
+import java.util.Scanner;
 import javax.swing.*;
 
 public class MapView extends JComponent implements MapAlterationListener, MouseListener, MouseMotionListener
@@ -20,6 +22,7 @@ public class MapView extends JComponent implements MapAlterationListener, MouseL
 		
 		addMouseListener(this);
 		addMouseMotionListener(this);
+		setFocusable(true);
 	}
 	
 	private void updateSize()
@@ -90,7 +93,6 @@ public class MapView extends JComponent implements MapAlterationListener, MouseL
 		for (int y = min_y; y < max_y; y++)
 			for (int x = min_x; x < max_x; x++)
 			{
-				// TODO: Draw each cell in the grid
 				char c = map.getSquareType(x, y);
 				if (c == MapConstants.CHAR_WALL)
 					g2.setColor(Color.darkGray);
@@ -127,7 +129,7 @@ public class MapView extends JComponent implements MapAlterationListener, MouseL
 
 	public void mapChanged(EditableMap map, int x, int y)
 	{
-		if (map == this.map)
+//		if (map == this.map)
 			repaintCell(x, y);
 	}
 	
@@ -139,7 +141,7 @@ public class MapView extends JComponent implements MapAlterationListener, MouseL
 	public void repaintCells(Rectangle rect)
 	{
 		if (rect != null)
-		repaint(rect.x*zoomLevel, rect.y*zoomLevel, rect.width*zoomLevel + 1, rect.height*zoomLevel + 1);
+			repaint(rect.x*zoomLevel, rect.y*zoomLevel, rect.width*zoomLevel + 1, rect.height*zoomLevel + 1);
 	}
 	
 	public void repaintCells(int x, int y, int width, int height)
@@ -217,4 +219,47 @@ public class MapView extends JComponent implements MapAlterationListener, MouseL
 	}
 
 	public void mouseMoved(MouseEvent e) { }
+	
+	/**
+	 * Get what's currently selected
+	 * @return  The current selection
+	 */
+	public String copySelection()
+	{
+		if (selection == null)
+			return null;
+		
+		String result = String.format("%d %d\n", selection.width, selection.height);
+		for (int y=0; y < selection.height; y++)
+		{
+			for (int x=0; x < selection.width; x++)
+				result += map.getSquareType(x + selection.x, y + selection.y);
+			result += "\n";
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Paste in a selection
+	 * @param selection  The selection to paste in
+	 */
+	public void pasteSelection(String selection)
+	{
+		Scanner in = new Scanner(selection);
+		int width = in.nextInt(), height = in.nextInt();
+		in.nextLine();
+		
+		String line;
+		for (int y=0; y < height; y++)
+		{
+			line = in.nextLine();
+			for (int x=0; x < width; x++)
+			{
+				map.setSquareType(x+this.selection.x, y+this.selection.y, line.charAt(x));
+			}
+		}
+		
+		repaintCells(this.selection.x, this.selection.y, width, height);
+	}
 }

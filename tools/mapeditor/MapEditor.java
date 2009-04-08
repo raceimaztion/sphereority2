@@ -1,6 +1,10 @@
 package tools.mapeditor;
 
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.*;
 import javax.swing.*;
 import java.io.*;
@@ -23,13 +27,19 @@ import common.gui.*;
  * Maybe this could be integrated into the game itself?
  * @author dvanhumb
  */
-public class MapEditor implements ActionListener, WindowListener
+public class MapEditor implements ActionListener, WindowListener, ClipboardOwner
 {
 	private JFrame window;
 	private EditableMap map;
 	private MapView mapView;
-	// Menu items:
+	// Map-menu items:
 	private JMenuItem menuNew, menuOpen, menuSave, menuSaveAs, menuQuit;
+	// Edit-menu items:
+	private JMenuItem menuCopy, menuPaste;
+	/**
+	 * Contains the current selection. System-wide selections are not yet supported.
+	 */
+	private String currentSelection = null;
 	
 	/**
 	 * Create the map editor window.
@@ -56,7 +66,7 @@ public class MapEditor implements ActionListener, WindowListener
 		
 		// Map menu:
 		JMenu mapMenu = new JMenu("Map");
-		mapMenu.setMnemonic(0);
+		mapMenu.setMnemonic('M');
 		menuBar.add(mapMenu);
 		
 		menuNew = createMenuItem("New", 0);
@@ -72,6 +82,18 @@ public class MapEditor implements ActionListener, WindowListener
 		mapMenu.add(menuSaveAs);
 		mapMenu.addSeparator();
 		mapMenu.add(menuQuit);
+		
+		menuCopy = createMenuItem("Copy", 0);
+		menuPaste = createMenuItem("Paste", 0);
+		menuPaste.setEnabled(false);
+		
+		JMenu editMenu = new JMenu("Edit");
+		editMenu.setMnemonic('E');
+		menuBar.add(editMenu);
+		
+		editMenu.add(menuCopy);
+		editMenu.add(menuPaste);
+		
 		
 		window.pack();
 		window.setLocationByPlatform(true);
@@ -181,6 +203,23 @@ public class MapEditor implements ActionListener, WindowListener
 		{
 			tryQuit();
 		}
+		else if (source.equals(menuCopy))
+		{
+			String selection = mapView.copySelection();
+			if (selection == null)
+				return;
+			
+			// Put the selection in the clipboard
+			currentSelection = selection;
+			menuPaste.setEnabled(true);
+			
+			// System-wide clipboard not yet supported
+			Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(selection), this);
+		}
+		else if (source.equals(menuPaste))
+		{
+			mapView.pasteSelection(currentSelection);
+		}
 	}
 	
 	public void tryQuit()
@@ -220,5 +259,10 @@ public class MapEditor implements ActionListener, WindowListener
 			// TODO: Figure out how to show multiple windows without having them use the same painting thread
 			System.out.println("Loading multiple map files from command-line not yet possible.");
 		}
+	}
+
+	public void lostOwnership(Clipboard clipboard, Transferable contents)
+	{
+		// We don't happen to care if we lost ownership of the clipboard
 	}
 }

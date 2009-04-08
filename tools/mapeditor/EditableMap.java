@@ -221,4 +221,14 @@ public class EditableMap implements MapConstants
 		else
 			return CHAR_WALL;
 	}
+	
+	public void setSquareType(int x, int y, char c)
+	{
+		if (!isValidPosition(x, y))
+			return;
+		
+		mapData[x][y] = c;
+		for (MapAlterationListener l : listeners)
+			l.mapChanged(this, x, y);
+	}
 }
