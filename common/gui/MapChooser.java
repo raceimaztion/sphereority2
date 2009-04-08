@@ -35,11 +35,11 @@ public class MapChooser implements ActionListener
 		dialog.getContentPane().add(scroller, BorderLayout.CENTER);
 		
 		buttonOkay = new JButton("Okay");
-		buttonOkay.setMnemonic(0);
+		buttonOkay.setMnemonic('O');
 		buttonOkay.addActionListener(this);
 		buttonOkay.setDefaultCapable(true);
 		buttonCancel = new JButton("Cancel");
-		buttonCancel.setMnemonic(0);
+		buttonCancel.setMnemonic('C');
 		buttonCancel.addActionListener(this);
 		
 		JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
