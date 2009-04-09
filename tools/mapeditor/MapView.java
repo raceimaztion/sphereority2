@@ -7,7 +7,11 @@ import java.awt.event.*;
 import java.util.Scanner;
 import javax.swing.*;
 
-public class MapView extends JComponent implements MapAlterationListener, MouseListener, MouseMotionListener
+/**
+ * This displays an EditableMap to edit.
+ * @author dvanhumb
+ */
+public class MapView extends JComponent implements MapConstants, MapAlterationListener, MouseListener, MouseMotionListener, ActionListener
 {
 	private static final long serialVersionUID = 98234532L;
 	
@@ -15,6 +19,8 @@ public class MapView extends JComponent implements MapAlterationListener, MouseL
 	private int zoomLevel;
 	private Rectangle selection;
 	private int pinned_x = 0, pinned_y = 0;
+	private JPopupMenu popupMenu;
+	private JMenuItem menuCopy, menuPaste, menuSpace, menuWall, menuSpawnA, menuSpawnB, menuFlagA, menuFlagB;
 	
 	public MapView()
 	{
@@ -23,6 +29,33 @@ public class MapView extends JComponent implements MapAlterationListener, MouseL
 		addMouseListener(this);
 		addMouseMotionListener(this);
 		setFocusable(true);
+		
+		// Our popup menu
+		menuCopy = createMenuItem("Copy", 0, null);
+		menuPaste = createMenuItem("Paste", 0, null);
+		menuSpace = createMenuItem("Space", 0, null);
+		menuWall = createMenuItem("Wall", 0, null);
+		
+		popupMenu = new JPopupMenu("Edit");
+		popupMenu.add(menuCopy);
+		popupMenu.add(menuPaste);
+		popupMenu.addSeparator();
+		popupMenu.add(menuSpace);
+		popupMenu.add(menuWall);
+		
+		for (Component c : popupMenu.getComponents())
+			c.setEnabled(false);
+		setComponentPopupMenu(popupMenu);
+	}
+	
+	private JMenuItem createMenuItem(String label, int mnemonic, Icon icon)
+	{
+		JMenuItem item = new JMenuItem(label, icon);
+		if (mnemonic >= 0 && mnemonic < label.length())
+			item.setMnemonic(label.charAt(mnemonic));
+		item.addActionListener(this);
+		
+		return item;
 	}
 	
 	private void updateSize()
@@ -41,6 +74,9 @@ public class MapView extends JComponent implements MapAlterationListener, MouseL
 	public void setMap(EditableMap map)
 	{
 		this.map = map;
+		
+		for (Component c : popupMenu.getComponents())
+			c.setEnabled(map != null);
 		
 		updateSize();
 	}
@@ -116,9 +152,12 @@ public class MapView extends JComponent implements MapAlterationListener, MouseL
 				g2.drawLine(min_x*zoomLevel, y*zoomLevel, max_x*zoomLevel, y*zoomLevel);
 		}
 		
-		// Draw the current selection, if we have one
+		// Do we have a selection?
 		if (selection != null)
 		{
+			// Make sure the selection is inside the current map
+			
+			// Draw the selection
 			g2.setColor(Color.green);
 			g2.drawRect(selection.x*zoomLevel,
 					selection.y*zoomLevel,
@@ -151,9 +190,18 @@ public class MapView extends JComponent implements MapAlterationListener, MouseL
 	
 	public void mouseClicked(MouseEvent e)
 	{
+		// If it's not the primary mouse button, don't do anything
+		if ((e.getButton() != MouseEvent.BUTTON1) || (map == null))
+			return;
+		
 		int x = e.getX(), y = e.getY();
 		x /= zoomLevel;
 		y /= zoomLevel;
+		x = Math.max(0, Math.min(map.getWidth()-1, x));
+		y = Math.max(0, Math.min(map.getHeight()-1, y));
+		
+		if ((map == null) || (x < 0) || (x >= map.getWidth()) || (y < 0) || (y >= map.getHeight()))
+			return;
 		
 		Rectangle rect = null;
 		if (selection != null)
@@ -170,9 +218,15 @@ public class MapView extends JComponent implements MapAlterationListener, MouseL
 
 	public void mousePressed(MouseEvent e)
 	{
+		// If it's not the primary mouse button, don't do anything
+		if ((e.getButton() != MouseEvent.BUTTON1) || (map == null))
+			return;
+		
 		int x = e.getX(), y = e.getY();
 		x /= zoomLevel;
 		y /= zoomLevel;
+		x = Math.max(0, Math.min(map.getWidth()-1, x));
+		y = Math.max(0, Math.min(map.getHeight()-1, y));
 		pinned_x = x;
 		pinned_y = y;
 		
@@ -185,16 +239,19 @@ public class MapView extends JComponent implements MapAlterationListener, MouseL
 		repaintCells(selection);
 	}
 
-	public void mouseReleased(MouseEvent e)
-	{
-		
-	}
+	public void mouseReleased(MouseEvent e) { }
 
 	public void mouseDragged(MouseEvent e)
 	{
+		// If it's not the primary mouse button, don't do anything
+		if (map == null)
+			return;
+		
 		int x = e.getX(), y = e.getY();
 		x /= zoomLevel;
 		y /= zoomLevel;
+		x = Math.max(0, Math.min(map.getWidth()-1, x));
+		y = Math.max(0, Math.min(map.getHeight()-1, y));
 		
 		int width = x - pinned_x, height = y - pinned_y;
 		Rectangle rect = new Rectangle(selection);
@@ -261,5 +318,39 @@ public class MapView extends JComponent implements MapAlterationListener, MouseL
 		}
 		
 		repaintCells(this.selection.x, this.selection.y, width, height);
+	}
+	
+	public void fillSelectionWith(char c)
+	{
+		if (selection == null)
+			return;
+		
+		for (int y=0; y < selection.height; y++)
+			for (int x=0; x < selection.width; x++)
+				map.setSquareType(x + selection.x, y + selection.y, c);
+		
+		repaintCells(selection);
+	}
+
+	public void actionPerformed(ActionEvent e)
+	{
+		Object source = e.getSource();
+		
+		if (source.equals(menuCopy))
+		{
+			// TODO: Move copy code here from MapEditor
+		}
+		else if (source.equals(menuPaste))
+		{
+			// TODO: Move paste code here from MapEditor
+		}
+		else if (source.equals(menuSpace))
+		{
+			fillSelectionWith(CHAR_SPACE);
+		}
+		else if (source.equals(menuWall))
+		{
+			fillSelectionWith(CHAR_WALL);
+		}
 	}
 }

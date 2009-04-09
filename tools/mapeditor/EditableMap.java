@@ -88,20 +88,24 @@ public class EditableMap implements MapConstants
 		this.width = width;
 		this.height = height;
 		this.mapName = mapName;
+		mapData = new char[width][height];
 		
+		// Top and bottom walls
 		for (int i=0; i < width; i++)
 		{
 			mapData[i][0] = CHAR_WALL;
-			mapData[0][height-1] = CHAR_WALL;
+			mapData[i][height-1] = CHAR_WALL;
 		}
 		
 		for (int y=1; y < height-1; y++)
 		{
+			// Left and right walls
 			mapData[0][y] = CHAR_WALL;
 			mapData[width-1][y] = CHAR_WALL;
 			
+			// Center spaces
 			for (int x=1; x < width-1; x++)
-				mapData[x][y] = '.';
+				mapData[x][y] = CHAR_SPACE;
 		}
 	}
 	
