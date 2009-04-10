@@ -1,10 +1,6 @@
 package tools.mapeditor;
 
 import java.awt.*;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.ClipboardOwner;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
 import java.awt.event.*;
 import javax.swing.*;
 import java.io.*;
@@ -27,7 +23,7 @@ import common.gui.*;
  * Maybe this could be integrated into the game itself?
  * @author dvanhumb
  */
-public class MapEditor implements ActionListener, WindowListener, ClipboardOwner
+public class MapEditor implements ActionListener, WindowListener
 {
 	private JFrame window;
 	private EditableMap map;
@@ -36,10 +32,6 @@ public class MapEditor implements ActionListener, WindowListener, ClipboardOwner
 	private JMenuItem menuNew, menuOpen, menuSave, menuSaveAs, menuQuit;
 	// Edit-menu items:
 	private JMenuItem menuCopy, menuPaste;
-	/**
-	 * Contains the current selection. System-wide selections are not yet supported.
-	 */
-	private String currentSelection = null;
 	
 	/**
 	 * Create the map editor window.
@@ -205,20 +197,11 @@ public class MapEditor implements ActionListener, WindowListener, ClipboardOwner
 		}
 		else if (source.equals(menuCopy))
 		{
-			String selection = mapView.copySelection();
-			if (selection == null)
-				return;
-			
-			// Put the selection in the clipboard
-			currentSelection = selection;
-			menuPaste.setEnabled(true);
-			
-			// System-wide clipboard not yet supported
-			Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(selection), this);
+			mapView.copy();
 		}
 		else if (source.equals(menuPaste))
 		{
-			mapView.pasteSelection(currentSelection);
+			mapView.paste();
 		}
 	}
 	
@@ -259,10 +242,5 @@ public class MapEditor implements ActionListener, WindowListener, ClipboardOwner
 			// TODO: Figure out how to show multiple windows without having them use the same painting thread
 			System.out.println("Loading multiple map files from command-line not yet possible.");
 		}
-	}
-
-	public void lostOwnership(Clipboard clipboard, Transferable contents)
-	{
-		// We don't happen to care if we lost ownership of the clipboard
 	}
 }

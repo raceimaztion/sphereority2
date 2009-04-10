@@ -3,7 +3,9 @@ package tools.mapeditor;
 import common.MapConstants;
 
 import java.awt.*;
+import java.awt.datatransfer.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
 import java.util.Scanner;
 import javax.swing.*;
 
@@ -11,13 +13,14 @@ import javax.swing.*;
  * This displays an EditableMap to edit.
  * @author dvanhumb
  */
-public class MapView extends JComponent implements MapConstants, MapAlterationListener, MouseListener, MouseMotionListener, ActionListener
+public class MapView extends JComponent implements MapConstants, MapAlterationListener, MouseListener, MouseMotionListener, ActionListener, ClipboardOwner
 {
 	private static final long serialVersionUID = 98234532L;
 	
 	private EditableMap map;
 	private int zoomLevel;
-	private Rectangle selection;
+	private Rectangle selectedRect;
+	private String currentSelection;
 	private int pinned_x = 0, pinned_y = 0;
 	private JPopupMenu popupMenu;
 	private JMenuItem menuCopy, menuPaste, menuSpace, menuWall, menuSpawnA, menuSpawnB, menuFlagA, menuFlagB;
@@ -25,16 +28,22 @@ public class MapView extends JComponent implements MapConstants, MapAlterationLi
 	public MapView()
 	{
 		zoomLevel = 16;
+		selectedRect = null;
+		currentSelection = null;
 		
 		addMouseListener(this);
 		addMouseMotionListener(this);
 		setFocusable(true);
 		
 		// Our popup menu
-		menuCopy = createMenuItem("Copy", 0, null);
-		menuPaste = createMenuItem("Paste", 0, null);
-		menuSpace = createMenuItem("Space", 0, null);
-		menuWall = createMenuItem("Wall", 0, null);
+		menuCopy = createMenuItem("Copy", 0);
+		menuPaste = createMenuItem("Paste", 0);
+		menuSpace = createMenuItem("Space", 0, CHAR_SPACE);
+		menuWall = createMenuItem("Wall", 0, CHAR_WALL);
+		menuSpawnA = createMenuItem("Spawn (A)", -1, CHAR_SPAWN_A);
+		menuSpawnB = createMenuItem("Spawn (B)", -1, CHAR_SPAWN_B);
+		menuFlagA = createMenuItem("Flag (A)", -1, CHAR_FLAG_A);
+		menuFlagB = createMenuItem("Flag (B)", -1, CHAR_FLAG_B);
 		
 		popupMenu = new JPopupMenu("Edit");
 		popupMenu.add(menuCopy);
@@ -42,15 +51,39 @@ public class MapView extends JComponent implements MapConstants, MapAlterationLi
 		popupMenu.addSeparator();
 		popupMenu.add(menuSpace);
 		popupMenu.add(menuWall);
+		popupMenu.add(menuSpawnA);
+		popupMenu.add(menuSpawnB);
+		popupMenu.add(menuFlagA);
+		popupMenu.add(menuFlagB);
 		
 		for (Component c : popupMenu.getComponents())
 			c.setEnabled(false);
 		setComponentPopupMenu(popupMenu);
 	}
 	
-	private JMenuItem createMenuItem(String label, int mnemonic, Icon icon)
+	private JMenuItem createMenuItem(String label, int mnemonic)
 	{
-		JMenuItem item = new JMenuItem(label, icon);
+		return createMenuItem(label, mnemonic, (char)0);
+	}
+	
+	private JMenuItem createMenuItem(String label, int mnemonic, char c)
+	{
+		JMenuItem item;
+		if (c > 0)
+		{
+			BufferedImage img = new BufferedImage(16, 16, BufferedImage.TYPE_INT_RGB);
+			
+			Graphics2D g = img.createGraphics();
+			MapCellRenderer.renderCell(g, 0, 0, 15, 15, c);
+			g.setColor(Color.black);
+			g.drawRect(0, 0, 16, 16);
+			g.dispose();
+			
+			item = new JMenuItem(label, new ImageIcon(img));
+		}
+		else
+			item = new JMenuItem(label);
+		
 		if (mnemonic >= 0 && mnemonic < label.length())
 			item.setMnemonic(label.charAt(mnemonic));
 		item.addActionListener(this);
@@ -128,19 +161,7 @@ public class MapView extends JComponent implements MapConstants, MapAlterationLi
 		// Draw the map
 		for (int y = min_y; y < max_y; y++)
 			for (int x = min_x; x < max_x; x++)
-			{
-				char c = map.getSquareType(x, y);
-				if (c == MapConstants.CHAR_WALL)
-					g2.setColor(Color.darkGray);
-				else if (c == MapConstants.CHAR_FLAG_A || c == MapConstants.CHAR_FLAG_B)
-					g2.setColor(Color.orange);
-				else if (c == MapConstants.CHAR_SPAWN_A || c == MapConstants.CHAR_SPAWN_B)
-					g2.setColor(Color.yellow);
-				else // it's a wall
-					g2.setColor(Color.white);
-				
-				g2.fillRect(x*zoomLevel, y*zoomLevel, zoomLevel, zoomLevel);
-			}
+				MapCellRenderer.renderCell(g2, x*zoomLevel, y*zoomLevel, zoomLevel, zoomLevel, map.getSquareType(x, y));
 		
 		// Draw a grid if we're zoomed in enough
 		if (zoomLevel >= 8)
@@ -153,16 +174,16 @@ public class MapView extends JComponent implements MapConstants, MapAlterationLi
 		}
 		
 		// Do we have a selection?
-		if (selection != null)
+		if (selectedRect != null)
 		{
 			// Make sure the selection is inside the current map
 			
 			// Draw the selection
 			g2.setColor(Color.green);
-			g2.drawRect(selection.x*zoomLevel,
-					selection.y*zoomLevel,
-					selection.width*zoomLevel,
-					selection.height*zoomLevel);
+			g2.drawRect(selectedRect.x*zoomLevel,
+					selectedRect.y*zoomLevel,
+					selectedRect.width*zoomLevel,
+					selectedRect.height*zoomLevel);
 		}
 	}
 
@@ -204,12 +225,12 @@ public class MapView extends JComponent implements MapConstants, MapAlterationLi
 			return;
 		
 		Rectangle rect = null;
-		if (selection != null)
-			rect = new Rectangle(selection);
-		selection = new Rectangle(x, y, 1, 1);
+		if (selectedRect != null)
+			rect = new Rectangle(selectedRect);
+		selectedRect = new Rectangle(x, y, 1, 1);
 		
 		repaintCells(rect);
-		repaintCells(selection);
+		repaintCells(selectedRect);
 	}
 
 	public void mouseEntered(MouseEvent e) { }
@@ -231,12 +252,12 @@ public class MapView extends JComponent implements MapConstants, MapAlterationLi
 		pinned_y = y;
 		
 		Rectangle rect = null;
-		if (selection != null)
-			rect = new Rectangle(selection);
-		selection = new Rectangle(x, y, 1, 1);
+		if (selectedRect != null)
+			rect = new Rectangle(selectedRect);
+		selectedRect = new Rectangle(x, y, 1, 1);
 		
 		repaintCells(rect);
-		repaintCells(selection);
+		repaintCells(selectedRect);
 	}
 
 	public void mouseReleased(MouseEvent e) { }
@@ -254,24 +275,24 @@ public class MapView extends JComponent implements MapConstants, MapAlterationLi
 		y = Math.max(0, Math.min(map.getHeight()-1, y));
 		
 		int width = x - pinned_x, height = y - pinned_y;
-		Rectangle rect = new Rectangle(selection);
+		Rectangle rect = new Rectangle(selectedRect);
 		
 		if (width < 0)
-			selection.x = pinned_x + width;
+			selectedRect.x = pinned_x + width;
 		else
-			selection.x = pinned_x;
+			selectedRect.x = pinned_x;
 		if (height < 0)
-			selection.y = pinned_y + height;
+			selectedRect.y = pinned_y + height;
 		else
-			selection.y = pinned_y;
+			selectedRect.y = pinned_y;
 		
-		selection.width = 1 + Math.abs(width);
-		selection.height = 1 + Math.abs(height);
+		selectedRect.width = 1 + Math.abs(width);
+		selectedRect.height = 1 + Math.abs(height);
 		
-		if (!rect.equals(selection))
+		if (!rect.equals(selectedRect))
 		{
 			repaintCells(rect);
-			repaintCells(selection);
+			repaintCells(selectedRect);
 		}
 	}
 
@@ -283,14 +304,14 @@ public class MapView extends JComponent implements MapConstants, MapAlterationLi
 	 */
 	public String copySelection()
 	{
-		if (selection == null)
+		if (selectedRect == null)
 			return null;
 		
-		String result = String.format("%d %d\n", selection.width, selection.height);
-		for (int y=0; y < selection.height; y++)
+		String result = String.format("%d %d\n", selectedRect.width, selectedRect.height);
+		for (int y=0; y < selectedRect.height; y++)
 		{
-			for (int x=0; x < selection.width; x++)
-				result += map.getSquareType(x + selection.x, y + selection.y);
+			for (int x=0; x < selectedRect.width; x++)
+				result += map.getSquareType(x + selectedRect.x, y + selectedRect.y);
 			result += "\n";
 		}
 		
@@ -313,23 +334,23 @@ public class MapView extends JComponent implements MapConstants, MapAlterationLi
 			line = in.nextLine();
 			for (int x=0; x < width; x++)
 			{
-				map.setSquareType(x+this.selection.x, y+this.selection.y, line.charAt(x));
+				map.setSquareType(x+this.selectedRect.x, y+this.selectedRect.y, line.charAt(x));
 			}
 		}
 		
-		repaintCells(this.selection.x, this.selection.y, width, height);
+		repaintCells(this.selectedRect.x, this.selectedRect.y, width, height);
 	}
 	
 	public void fillSelectionWith(char c)
 	{
-		if (selection == null)
+		if (selectedRect == null)
 			return;
 		
-		for (int y=0; y < selection.height; y++)
-			for (int x=0; x < selection.width; x++)
-				map.setSquareType(x + selection.x, y + selection.y, c);
+		for (int y=0; y < selectedRect.height; y++)
+			for (int x=0; x < selectedRect.width; x++)
+				map.setSquareType(x + selectedRect.x, y + selectedRect.y, c);
 		
-		repaintCells(selection);
+		repaintCells(selectedRect);
 	}
 
 	public void actionPerformed(ActionEvent e)
@@ -338,11 +359,11 @@ public class MapView extends JComponent implements MapConstants, MapAlterationLi
 		
 		if (source.equals(menuCopy))
 		{
-			// TODO: Move copy code here from MapEditor
+			copy();
 		}
 		else if (source.equals(menuPaste))
 		{
-			// TODO: Move paste code here from MapEditor
+			paste();
 		}
 		else if (source.equals(menuSpace))
 		{
@@ -352,5 +373,48 @@ public class MapView extends JComponent implements MapConstants, MapAlterationLi
 		{
 			fillSelectionWith(CHAR_WALL);
 		}
+		else if (source.equals(menuSpawnA))
+		{
+			fillSelectionWith(CHAR_SPAWN_A);
+		}
+		else if (source.equals(menuSpawnB))
+		{
+			fillSelectionWith(CHAR_SPAWN_B);
+		}
+		else if (source.equals(menuFlagA))
+		{
+			fillSelectionWith(CHAR_FLAG_A);
+		}
+		else if (source.equals(menuFlagB))
+		{
+			fillSelectionWith(CHAR_FLAG_B);
+		}
+	}
+	
+	public void copy()
+	{
+		String selection = copySelection();
+		if (selection == null)
+			return;
+		
+		// Put the selection in the clipboard
+		currentSelection = selection;
+		menuPaste.setEnabled(true);
+		
+		// System-wide clipboard not yet supported
+		Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(selection), this);
+	}
+	
+	public void paste()
+	{
+		if ((map == null) || (currentSelection == null))
+			return;
+		
+		pasteSelection(currentSelection);
+	}
+
+	public void lostOwnership(Clipboard clipboard, Transferable contents)
+	{
+		// We don't happen to care if we loose ownership of the clipboard
 	}
 }

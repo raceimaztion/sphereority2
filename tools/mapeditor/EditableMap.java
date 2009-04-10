@@ -3,6 +3,7 @@ package tools.mapeditor;
 import common.*;
 
 import java.io.*;
+import java.security.InvalidParameterException;
 import java.util.Vector;
 import java.util.Scanner;
 
@@ -74,7 +75,19 @@ public class EditableMap implements MapConstants
 	 */
 	public EditableMap(GameMap map)
 	{
+		width = map.getWidth();
+		height = map.getHeight();
+		mapName = map.getName();
 		
+		String data = map.toString();
+		Scanner in = new Scanner(data);
+		String line = in.nextLine(); // skip the header
+		for (int y=0; y < height; y++)
+		{
+			line = in.nextLine();
+			for (int x=0; x < width; x++)
+				mapData[x][y] = line.charAt(x);
+		}
 	}
 	
 	/**
@@ -171,23 +184,60 @@ public class EditableMap implements MapConstants
 	public void save() throws IOException
 	{
 		FileWriter out = new FileWriter(String.format("maps/%s.map", getName()));
-		final int width = getWidth(), height = getHeight();
 		
-		// Write header
-		out.write(String.format("%d %d\n", width, height));
-		
-		// Write map data
-		for (int y=0; y < height; y++)
-		{
-			for (int x=0; x < width; x++)
-				out.write(mapData[x][y]);
-			out.write('\n');
-		}
-		
+		out.write(toString());
 		dirty = false;
 		
 		out.flush();
 		out.close();
+	}
+	
+	/**
+	 * Converts this map to a string
+	 */
+	public String toString()
+	{
+		String result = String.format("%d %d\n", width, height);
+		
+		for (int y=0; y < height; y++)
+		{
+			for (int x=0; x < width; x++)
+				result += mapData[x][y];
+			result += "\n";
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Take a snapshot of this map's current status
+	 * @return A snapshot of this map
+	 */
+	public String getSnapshot()
+	{
+		return toString();
+	}
+	
+	/**
+	 * Restore a snapshot
+	 * @param s  The snapshot to restore
+	 */
+	public void restoreSnapshot(String s)
+	{
+		Scanner in = new Scanner(s);
+		int w = in.nextInt(), h = in.nextInt();
+		in.nextLine();
+		
+		if ((w != width) || (h != height))
+			throw new InvalidParameterException("Tried to restore a wrong-sized snapshot.");
+		
+		String line;
+		for (int y=0; y < height; y++)
+		{
+			line = in.nextLine();
+			for (int x=0; x < width; x++)
+				mapData[x][y] = line.charAt(x);
+		}
 	}
 	
 	public boolean isDirty()
