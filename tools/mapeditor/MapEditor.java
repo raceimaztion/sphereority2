@@ -58,14 +58,15 @@ public class MapEditor implements ActionListener, WindowListener
 		
 		// Map menu:
 		JMenu mapMenu = new JMenu("Map");
-		mapMenu.setMnemonic('M');
+		mapMenu.setMnemonic(KeyEvent.VK_M);
 		menuBar.add(mapMenu);
 		
-		menuNew = createMenuItem("New", 0);
-		menuOpen = createMenuItem("Open...", 0);
-		menuSave = createMenuItem("Save", 0);
-		menuSaveAs = createMenuItem("Save as...", 5);
-		menuQuit = createMenuItem("Quit", 0);
+		menuNew = createMenuItem("New", KeyEvent.VK_N);
+		menuOpen = createMenuItem("Open...", KeyEvent.VK_O);
+		menuSave = createMenuItem("Save", KeyEvent.VK_S);
+		menuSaveAs = createMenuItem("Save as...", KeyEvent.VK_A);
+		menuSaveAs.setDisplayedMnemonicIndex(5);
+		menuQuit = createMenuItem("Quit", KeyEvent.VK_Q);
 		
 		mapMenu.add(menuNew);
 		mapMenu.addSeparator();
@@ -75,17 +76,16 @@ public class MapEditor implements ActionListener, WindowListener
 		mapMenu.addSeparator();
 		mapMenu.add(menuQuit);
 		
-		menuCopy = createMenuItem("Copy", 0);
-		menuPaste = createMenuItem("Paste", 0);
+		menuCopy = createMenuItem("Copy", KeyEvent.VK_C);
+		menuPaste = createMenuItem("Paste", KeyEvent.VK_P);
 		menuPaste.setEnabled(false);
 		
 		JMenu editMenu = new JMenu("Edit");
-		editMenu.setMnemonic('E');
+		editMenu.setMnemonic(KeyEvent.VK_E);
 		menuBar.add(editMenu);
 		
 		editMenu.add(menuCopy);
 		editMenu.add(menuPaste);
-		
 		
 		window.pack();
 		window.setLocationByPlatform(true);
@@ -93,7 +93,7 @@ public class MapEditor implements ActionListener, WindowListener
 	
 	private JMenuItem createMenuItem(String label, int mnemonic)
 	{
-		JMenuItem item = new JMenuItem(label, label.charAt(mnemonic));
+		JMenuItem item = new JMenuItem(label, mnemonic);
 		item.addActionListener(this);
 		
 		return item;
@@ -207,7 +207,23 @@ public class MapEditor implements ActionListener, WindowListener
 	
 	public void tryQuit()
 	{
-		// TODO: Display a dialog asking if we want to save the file, cancel closing the window, or quit
+		if (map != null && map.isDirty())
+		{
+			int result = JOptionPane.showOptionDialog(window, "You're about to close the window with an unsaved map,\nwould you like it save it before you quit?", "Sphereority 2 - Map Editor", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null, null, null);
+			if (result == JOptionPane.YES_OPTION)
+			{
+				try
+				{
+					map.save();
+				}
+				catch (IOException e)
+				{
+					e.printStackTrace();
+				}
+			}
+			else if (result == JOptionPane.CANCEL_OPTION)
+				return;
+		}
 		System.exit(0);
 	}
 	

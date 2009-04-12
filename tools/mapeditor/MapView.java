@@ -6,6 +6,7 @@ import java.awt.*;
 import java.awt.datatransfer.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
+import java.security.InvalidParameterException;
 import java.util.Scanner;
 import javax.swing.*;
 
@@ -20,26 +21,29 @@ public class MapView extends JComponent implements MapConstants, MapAlterationLi
 	private EditableMap map;
 	private int zoomLevel;
 	private Rectangle selectedRect;
-	private String currentSelection;
+	private String internalClipboard;
 	private int pinned_x = 0, pinned_y = 0;
 	private JPopupMenu popupMenu;
 	private JMenuItem menuCopy, menuPaste, menuSpace, menuWall, menuSpawnA, menuSpawnB, menuFlagA, menuFlagB;
 	
+	/**
+	 * Create a new MapView widget
+	 */
 	public MapView()
 	{
 		zoomLevel = 16;
 		selectedRect = null;
-		currentSelection = null;
+		internalClipboard = null;
 		
 		addMouseListener(this);
 		addMouseMotionListener(this);
 		setFocusable(true);
 		
 		// Our popup menu
-		menuCopy = createMenuItem("Copy", 0);
-		menuPaste = createMenuItem("Paste", 0);
-		menuSpace = createMenuItem("Space", 0, CHAR_SPACE);
-		menuWall = createMenuItem("Wall", 0, CHAR_WALL);
+		menuCopy = createMenuItem("Copy", KeyEvent.VK_C);
+		menuPaste = createMenuItem("Paste", KeyEvent.VK_P);
+		menuSpace = createMenuItem("Space", KeyEvent.VK_S, CHAR_SPACE);
+		menuWall = createMenuItem("Wall", KeyEvent.VK_W, CHAR_WALL);
 		menuSpawnA = createMenuItem("Spawn (A)", -1, CHAR_SPAWN_A);
 		menuSpawnB = createMenuItem("Spawn (B)", -1, CHAR_SPAWN_B);
 		menuFlagA = createMenuItem("Flag (A)", -1, CHAR_FLAG_A);
@@ -61,20 +65,33 @@ public class MapView extends JComponent implements MapConstants, MapAlterationLi
 		setComponentPopupMenu(popupMenu);
 	}
 	
+	/**
+	 * Used to create a new JMenuItem
+	 * @param label  The label to use
+	 * @param mnemonic  The virtual keycode of the key to use as the mnemonic
+	 * @return  The new JMenuItem
+	 */
 	private JMenuItem createMenuItem(String label, int mnemonic)
 	{
 		return createMenuItem(label, mnemonic, (char)0);
 	}
 	
-	private JMenuItem createMenuItem(String label, int mnemonic, char c)
+	/**
+	 * Used to create a new JMenuItem
+	 * @param label  The label to use
+	 * @param mnemonic  The virtual keycode of the key to use as the mnemonic
+	 * @param code  The map square type to render as an icon
+	 * @return  The new JMenuItem
+	 */
+	private JMenuItem createMenuItem(String label, int mnemonic, char code)
 	{
 		JMenuItem item;
-		if (c > 0)
+		if (code > 0)
 		{
 			BufferedImage img = new BufferedImage(16, 16, BufferedImage.TYPE_INT_RGB);
 			
 			Graphics2D g = img.createGraphics();
-			MapCellRenderer.renderCell(g, 0, 0, 15, 15, c);
+			MapCellRenderer.renderCell(g, 0, 0, 15, 15, code);
 			g.setColor(Color.black);
 			g.drawRect(0, 0, 16, 16);
 			g.dispose();
@@ -84,13 +101,15 @@ public class MapView extends JComponent implements MapConstants, MapAlterationLi
 		else
 			item = new JMenuItem(label);
 		
-		if (mnemonic >= 0 && mnemonic < label.length())
-			item.setMnemonic(label.charAt(mnemonic));
+		item.setMnemonic(mnemonic);
 		item.addActionListener(this);
 		
 		return item;
 	}
 	
+	/**
+	 * Update the size of this MapView in response to a change of map or zoomLevel
+	 */
 	private void updateSize()
 	{
 		if (map == null)
@@ -104,9 +123,17 @@ public class MapView extends JComponent implements MapConstants, MapAlterationLi
 		repaint();
 	}
 	
+	/**
+	 * Change which map we're showing
+	 * @param map  The new map to show
+	 */
 	public void setMap(EditableMap map)
 	{
+		if (this.map != null)
+			this.map.removeMapChangeListener(this);
 		this.map = map;
+		if (this.map != null)
+			this.map.addMapChangeListener(this);
 		
 		for (Component c : popupMenu.getComponents())
 			c.setEnabled(map != null);
@@ -114,6 +141,10 @@ public class MapView extends JComponent implements MapConstants, MapAlterationLi
 		updateSize();
 	}
 	
+	/**
+	 * Change the zoom level
+	 * @param level  The new zoom level to use
+	 */
 	public void setZoomLevel(int level)
 	{
 		if (level < 1)
@@ -124,16 +155,27 @@ public class MapView extends JComponent implements MapConstants, MapAlterationLi
 		updateSize();
 	}
 	
+	/**
+	 * Find out what we're currently using for zoom level
+	 * @return  The current zoom level
+	 */
 	public int getZoomLevel()
 	{
 		return zoomLevel;
 	}
 	
+	/**
+	 * Find out what the current 
+	 * @return
+	 */
 	public EditableMap getMap()
 	{
 		return map;
 	}
 	
+	/**
+	 * Draw the map
+	 */
 	public void paintComponent(Graphics g)
 	{
 		Graphics2D g2 = (Graphics2D)g;
@@ -186,18 +228,26 @@ public class MapView extends JComponent implements MapConstants, MapAlterationLi
 					selectedRect.height*zoomLevel);
 		}
 	}
-
+	
 	public void mapChanged(EditableMap map, int x, int y)
 	{
-//		if (map == this.map)
-			repaintCell(x, y);
+		repaintCell(x, y);
 	}
 	
+	/**
+	 * Called when a cell has been altered and needs to be repainted
+	 * @param x  The x-coordinate of the changed cell
+	 * @param y  The y-coordinate of the changed cell
+	 */
 	public void repaintCell(int x, int y)
 	{
 		repaint(zoomLevel*x, zoomLevel*y, zoomLevel+1, zoomLevel+1);
 	}
 	
+	/**
+	 * Called when a group of cells has been altered and needs to be repainted
+	 * @param rect  The rectangle of cells (in map-space) that need repainting
+	 */
 	public void repaintCells(Rectangle rect)
 	{
 		if (rect != null)
@@ -341,14 +391,18 @@ public class MapView extends JComponent implements MapConstants, MapAlterationLi
 		repaintCells(this.selectedRect.x, this.selectedRect.y, width, height);
 	}
 	
-	public void fillSelectionWith(char c)
+	/**
+	 * Fill the current selection with the given map square type
+	 * @param code  The code for the square type to use
+	 */
+	public void fillSelectionWith(char code)
 	{
 		if (selectedRect == null)
 			return;
 		
 		for (int y=0; y < selectedRect.height; y++)
 			for (int x=0; x < selectedRect.width; x++)
-				map.setSquareType(x + selectedRect.x, y + selectedRect.y, c);
+				map.setSquareType(x + selectedRect.x, y + selectedRect.y, code);
 		
 		repaintCells(selectedRect);
 	}
@@ -391,6 +445,9 @@ public class MapView extends JComponent implements MapConstants, MapAlterationLi
 		}
 	}
 	
+	/**
+	 * Copy the current selection to the internal clipboard
+	 */
 	public void copy()
 	{
 		String selection = copySelection();
@@ -398,23 +455,54 @@ public class MapView extends JComponent implements MapConstants, MapAlterationLi
 			return;
 		
 		// Put the selection in the clipboard
-		currentSelection = selection;
+		internalClipboard = selection;
 		menuPaste.setEnabled(true);
 		
 		// System-wide clipboard not yet supported
 		Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(selection), this);
 	}
 	
+	/**
+	 * Paste the contents of the internal clipboard into the current selection 
+	 */
 	public void paste()
 	{
-		if ((map == null) || (currentSelection == null))
+		if ((map == null) || (internalClipboard == null))
 			return;
 		
-		pasteSelection(currentSelection);
+		pasteSelection(internalClipboard);
 	}
 
 	public void lostOwnership(Clipboard clipboard, Transferable contents)
 	{
 		// We don't happen to care if we loose ownership of the clipboard
+	}
+	
+	/**
+	 * Get the contents of the internal clipboard
+	 * @return  The current contents of the clipboard
+	 */
+	public String getInternalClipboard()
+	{
+		return internalClipboard;
+	}
+	
+	/**
+	 * Change the contents of the internal clipboard
+	 * @param select  The desired contents
+	 * @throws InvalidParameterException  Is thrown if the desired contents are not formatted properly
+	 */
+	public void setInternalClipboard(String select) throws InvalidParameterException
+	{
+		if (select == null)
+		{
+			internalClipboard = null;
+			return;
+		}
+		
+		if (!select.matches("[0-9]+ [0-9]+\n([sSfF. +\n)+[cd]?"))
+			throw new InvalidParameterException("Tried to change current selection to an invalid format.");
+		
+		internalClipboard = select;
 	}
 }

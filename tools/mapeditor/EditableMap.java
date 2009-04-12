@@ -7,7 +7,11 @@ import java.security.InvalidParameterException;
 import java.util.Vector;
 import java.util.Scanner;
 
-
+/**
+ * A map that can be edited. A variation (not a sub-class) of common.GameMap that is optimized for editing.
+ * An EditableMap can be converted to a GameMap by invoking the .toGameMap() method. 
+ * @author dvanhumb
+ */
 public class EditableMap implements MapConstants
 {
 	private Vector<MapAlterationListener> listeners = new Vector<MapAlterationListener>();
@@ -122,6 +126,12 @@ public class EditableMap implements MapConstants
 		}
 	}
 	
+	/**
+	 * Check whether a particular location is inside this map
+	 * @param x  The x-coordinate we're interested in
+	 * @param y  The y-coordinate we're interested in
+	 * @return  Whether the location is inside this map
+	 */
 	public boolean isValidPosition(int x, int y)
 	{
 		return ((x >= 0) && (x < width)) || ((y >= 0) && (y < height));
@@ -135,18 +145,18 @@ public class EditableMap implements MapConstants
 	 */
 	public void setWall(int x, int y, boolean isWall)
 	{
-		if (isValidPosition(x, y))
-		{
-			if (isWall)
-				mapData[x][y] = CHAR_WALL;
-			else
-				mapData[x][y] = '.';
-			
-			for (MapAlterationListener mcl : listeners)
-				mcl.mapChanged(this, x, y);
-			
-			dirty = true;
-		}
+		if (!isValidPosition(x, y))
+			return;
+		
+		if (isWall)
+			mapData[x][y] = CHAR_WALL;
+		else
+			mapData[x][y] = '.';
+		
+		for (MapAlterationListener mcl : listeners)
+			mcl.mapChanged(this, x, y);
+		
+		dirty = true;
 	}
 	
 	/**
@@ -194,6 +204,7 @@ public class EditableMap implements MapConstants
 	
 	/**
 	 * Converts this map to a string
+	 * @return  This map as a string
 	 */
 	public String toString()
 	{
@@ -205,6 +216,11 @@ public class EditableMap implements MapConstants
 				result += mapData[x][y];
 			result += "\n";
 		}
+		
+		if (dirty)
+			result += "d";
+		else
+			result += "c";
 		
 		return result;
 	}
@@ -238,23 +254,41 @@ public class EditableMap implements MapConstants
 			for (int x=0; x < width; x++)
 				mapData[x][y] = line.charAt(x);
 		}
+		
+		dirty = in.next(".") == "d";
 	}
 	
+	/**
+	 * Find out if this map has been changed since it was last saved
+	 * @return  True if this is an unsaved map
+	 */
 	public boolean isDirty()
 	{
 		return dirty;
 	}
-
+	
+	/**
+	 * Get the height of this map
+	 * @return  This map's height
+	 */
 	public int getHeight()
 	{
 		return height;
 	}
-
+	
+	/**
+	 * Get the name of this map
+	 * @return  This map's name
+	 */
 	public String getName()
 	{
 		return mapName;
 	}
-
+	
+	/**
+	 * Find the width of this map
+	 * @return  This map's width
+	 */
 	public int getWidth()
 	{
 		return width;
@@ -268,6 +302,12 @@ public class EditableMap implements MapConstants
 			return true;
 	}
 	
+	/**
+	 * Find out what a square's type is
+	 * @param x  The x-coordinate of the square of interest
+	 * @param y  The y-coordinate of the square of interest
+	 * @return  The square's type
+	 */
 	public char getSquareType(int x, int y)
 	{
 		if (isValidPosition(x, y))
@@ -276,6 +316,12 @@ public class EditableMap implements MapConstants
 			return CHAR_WALL;
 	}
 	
+	/**
+	 * Set a square to a particular type
+	 * @param x  The x-coordinate of the square to change
+	 * @param y  The y-coordinate of the square to change
+	 * @param c  The type to change it to
+	 */
 	public void setSquareType(int x, int y, char c)
 	{
 		if (!isValidPosition(x, y))
@@ -284,5 +330,16 @@ public class EditableMap implements MapConstants
 		mapData[x][y] = c;
 		for (MapAlterationListener l : listeners)
 			l.mapChanged(this, x, y);
+		
+		dirty = true;
+	}
+	
+	/**
+	 * Converts this EditableMap to a GameMap
+	 * @return  A copy of this map as a GameMap
+	 */
+	public GameMap toGameMap()
+	{
+		return new GameMap(mapName, toString());
 	}
 }
