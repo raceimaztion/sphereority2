@@ -14,7 +14,8 @@ import javax.swing.*;
  * This displays an EditableMap to edit.
  * @author dvanhumb
  */
-public class MapView extends JComponent implements MapConstants, MapAlterationListener, MouseListener, MouseMotionListener, ActionListener, ClipboardOwner
+public class MapView extends JComponent implements MapConstants, MapAlterationListener,
+			MouseListener, MouseMotionListener, ActionListener, ClipboardOwner, KeyListener
 {
 	private static final long serialVersionUID = 98234532L;
 	
@@ -35,8 +36,10 @@ public class MapView extends JComponent implements MapConstants, MapAlterationLi
 		selectedRect = null;
 		internalClipboard = null;
 		
+		addKeyListener(this);
 		addMouseListener(this);
 		addMouseMotionListener(this);
+		
 		setFocusable(true);
 		
 		// Our popup menu
@@ -227,7 +230,7 @@ public class MapView extends JComponent implements MapConstants, MapAlterationLi
 					selectedRect.width*zoomLevel,
 					selectedRect.height*zoomLevel);
 		}
-	}
+	} // end paintComponent()
 	
 	public void mapChanged(EditableMap map, int x, int y)
 	{
@@ -317,6 +320,8 @@ public class MapView extends JComponent implements MapConstants, MapAlterationLi
 		// If it's not the primary mouse button, don't do anything
 		if (map == null)
 			return;
+		
+		requestFocusInWindow();
 		
 		int x = e.getX(), y = e.getY();
 		x /= zoomLevel;
@@ -504,5 +509,83 @@ public class MapView extends JComponent implements MapConstants, MapAlterationLi
 			throw new InvalidParameterException("Tried to change current selection to an invalid format.");
 		
 		internalClipboard = select;
+	}
+
+	public void keyPressed(KeyEvent e)
+	{
+		int code = e.getKeyCode();
+		
+		if (code == KeyEvent.VK_LEFT)
+		{
+			if (map == null || selectedRect == null)
+				return;
+			
+			repaintCells(selectedRect);
+			selectedRect.x --;
+			if (selectedRect.x < 0)
+			{
+				selectedRect.x ++;
+				selectedRect.width = Math.max(1, selectedRect.width-1);
+			}
+			repaintCells(selectedRect);
+		}
+		else if (code == KeyEvent.VK_RIGHT)
+		{
+			if (map == null || selectedRect == null)
+				return;
+			
+			repaintCells(selectedRect);
+			selectedRect.x ++;
+			if ((selectedRect.x + selectedRect.width) > map.getWidth())
+			{
+				if (selectedRect.width <= 1)
+				{
+					selectedRect.x --;
+					repaintCells(selectedRect);
+					return;
+				}
+				selectedRect.width --;
+			}
+			repaintCells(selectedRect);
+		}
+		else if (code == KeyEvent.VK_UP)
+		{
+			if (map == null || selectedRect == null)
+				return;
+			
+			repaintCells(selectedRect);
+			selectedRect.y --;
+			if (selectedRect.y < 0)
+			{
+				selectedRect.y ++;
+				selectedRect.height = Math.max(1, selectedRect.height-1);
+			}
+			repaintCells(selectedRect);
+		}
+		else if (code == KeyEvent.VK_DOWN)
+		{
+			if (map == null || selectedRect == null)
+				return;
+			
+			repaintCells(selectedRect);
+			selectedRect.y ++;
+			if ((selectedRect.y + selectedRect.height) > map.getHeight())
+			{
+				if (selectedRect.height <= 1)
+				{
+					selectedRect.y --;
+					repaintCells(selectedRect);
+					return;
+				}
+				selectedRect.height --;
+			}
+			repaintCells(selectedRect);
+		}
+	}
+	
+	public void keyReleased(KeyEvent e) { }
+
+	public void keyTyped(KeyEvent e)
+	{
 	}
 }

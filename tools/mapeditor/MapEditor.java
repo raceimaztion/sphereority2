@@ -49,7 +49,7 @@ public class MapEditor implements ActionListener, WindowListener
 		// Editing part of the window
 		mapView = new MapView();
 		JScrollPane scroller = new JScrollPane(mapView);
-		scroller.setPreferredSize(new Dimension(200, 160));
+		scroller.setPreferredSize(new Dimension(320, 240));
 		window.getContentPane().add(scroller, BorderLayout.CENTER);
 		
 		// Menus:
@@ -89,6 +89,7 @@ public class MapEditor implements ActionListener, WindowListener
 		
 		window.pack();
 		window.setLocationByPlatform(true);
+		mapView.requestFocusInWindow();
 	}
 	
 	private JMenuItem createMenuItem(String label, int mnemonic)
