@@ -1,0 +1,9 @@
+h1. Sphereority 2: The Assault
+
+A rewrite of the original "Spherority":http://github.com/sphereority/sphereority/tree/master, Sphereority 2: The Assault will have improved graphics and gameplay, as well as the following features:
+
+* Two rendering engines (3D with OpenGL and 2D with Java's Swing)
+* Multiple weapons
+* Up to 256 players per server
+* Interactive map editor
+
