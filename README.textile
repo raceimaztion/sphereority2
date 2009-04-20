@@ -7,3 +7,23 @@ A rewrite of the original "Spherority":http://github.com/sphereority/sphereority
 * Up to 256 players per server
 * Interactive map editor
 
+h2. Sphereority Server
+
+
+h2. Sphereority Client
+
+
+h2. Map Editor
+
+To compile the Map Editor
+
+<pre>
+cd sphereority2
+javac tools/mapeditor/MapEditor.java
+</pre>
+
+To run the Map Editor
+<pre>
+java tools.mapeditor.MapEditor
+</pre>
+
