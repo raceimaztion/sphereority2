@@ -271,11 +271,12 @@ public class MapView extends JComponent implements MapConstants, MapAlterationLi
 		int x = e.getX(), y = e.getY();
 		x /= zoomLevel;
 		y /= zoomLevel;
-		x = Math.max(0, Math.min(map.getWidth()-1, x));
-		y = Math.max(0, Math.min(map.getHeight()-1, y));
 		
 		if ((map == null) || (x < 0) || (x >= map.getWidth()) || (y < 0) || (y >= map.getHeight()))
 			return;
+		
+		x = Math.max(0, Math.min(map.getWidth()-1, x));
+		y = Math.max(0, Math.min(map.getHeight()-1, y));
 		
 		Rectangle rect = null;
 		if (selectedRect != null)
@@ -299,10 +300,12 @@ public class MapView extends JComponent implements MapConstants, MapAlterationLi
 		int x = e.getX(), y = e.getY();
 		x /= zoomLevel;
 		y /= zoomLevel;
-		x = Math.max(0, Math.min(map.getWidth()-1, x));
-		y = Math.max(0, Math.min(map.getHeight()-1, y));
-		pinned_x = x;
-		pinned_y = y;
+		
+		pinned_x = Math.max(0, Math.min(map.getWidth()-1, x));
+		pinned_y = Math.max(0, Math.min(map.getHeight()-1, y));
+		
+		if ((map == null) || (x < 0) || (x >= map.getWidth()) || (y < 0) || (y >= map.getHeight()))
+			return;
 		
 		Rectangle rect = null;
 		if (selectedRect != null)
@@ -330,7 +333,11 @@ public class MapView extends JComponent implements MapConstants, MapAlterationLi
 		y = Math.max(0, Math.min(map.getHeight()-1, y));
 		
 		int width = x - pinned_x, height = y - pinned_y;
-		Rectangle rect = new Rectangle(selectedRect);
+		Rectangle rect = null;
+		if (selectedRect != null)
+			rect = new Rectangle(selectedRect);
+		else
+			selectedRect = new Rectangle(pinned_x, pinned_y, 1, 1);
 		
 		if (width < 0)
 			selectedRect.x = pinned_x + width;
@@ -344,7 +351,7 @@ public class MapView extends JComponent implements MapConstants, MapAlterationLi
 		selectedRect.width = 1 + Math.abs(width);
 		selectedRect.height = 1 + Math.abs(height);
 		
-		if (!rect.equals(selectedRect))
+		if ((rect == null) || (!rect.equals(selectedRect)))
 		{
 			repaintCells(rect);
 			repaintCells(selectedRect);
