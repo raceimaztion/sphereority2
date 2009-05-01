@@ -243,18 +243,18 @@ public class MapEditor implements ActionListener, WindowListener
 	
 	public static void main(String[] args)
 	{
-		if (args.length < 1)
+		if (args.length == 0)
 		{
 			MapEditor me = new MapEditor();
 			me.show();
 		}
-		else if (args.length < 2)
+		else if (args.length == 1)
 		{
 			MapEditor me = new MapEditor();
-			me.loadMap(args[1]);
+			me.loadMap(args[0]);
 			me.show();
 		}
-		else
+		else // If we have more than one command-line parameter
 		{
 			// TODO: Figure out how to show multiple windows without having them use the same painting thread
 			System.out.println("Loading multiple map files from command-line not yet possible.");
