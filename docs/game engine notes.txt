@@ -1,4 +1,4 @@
-The game engine and time:
+The client game engine and time:
 	What I've tried to do so far is create a global system for managing time, in
 particular for the Actors, but I forgot about Java's garbage collection system. This
 means that for each game you join and leave, more and more Actors will remain in the
@@ -8,3 +8,8 @@ and keep track of all the Actors, clearing out the list each time the client lea
 a game. This might also let us get away with using one single instance of the game
 engine during the time that the client is running, which means that we'll much more
 careful when disposing of things when leaving games.
+
+	I suppose this means that we need a stateful client game engine, with one
+constructor and several control methods (such as: join game, leave game, start local
+game, etc.). This also adds some difficulty to the system in that the network system
+will need to be pretty transparent.

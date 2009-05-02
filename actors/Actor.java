@@ -56,6 +56,15 @@ public abstract class Actor implements ActorConstants
     		timers.TimerSystem.getTimerSystem().addTimer((Animatible)this);
     }
     
+    /**
+     * Called by the game engine to dispose of this Actor
+     */
+    public void dispose()
+    {
+    	// If we're Animatible, remove us from the timer system
+    	// If we're Intelligent, remove us from the GameEngine's intelligence list
+    }
+    
     public Actor(Position position, Position size)
     {
         this();
@@ -92,7 +101,7 @@ public abstract class Actor implements ActorConstants
 	 * be removed from the system.
 	 * @return Returns true if we need to remove this Actor from the system.
 	 */
-	public boolean getNeedsRemoving()
+	public boolean needsRemoving()
 	{
 		return needsRemoving;
 	}
