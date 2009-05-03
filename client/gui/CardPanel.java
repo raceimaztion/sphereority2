@@ -17,13 +17,20 @@ public class CardPanel extends JPanel
 	private Vector<String> cardNames;
 	private Stack<String> cardStack;
 	
-	public CardPanel()
+	/**
+	 * Create a new CardPanel
+	 * @param defaultCard  The default card to show (can also be called the "root" card)
+	 */
+	public CardPanel(CardComponent defaultCard)
 	{
 		cardLayout = new CardLayout();
 		setLayout(cardLayout);
 		
 		cardNames = new Vector<String>();
 		cardStack = new Stack<String>();
+		
+		if (defaultCard != null)
+			showCard(defaultCard);
 	}
 	
 	public boolean isChild(CardComponent c)
@@ -44,7 +51,8 @@ public class CardPanel extends JPanel
 		{
 			add(c);
 			cardLayout.addLayoutComponent(c, c.getCardName());
-			validate();
+			if (isVisible())
+				validate();
 		}
 		
 		cardLayout.show(this, c.getCardName());
@@ -56,6 +64,9 @@ public class CardPanel extends JPanel
 	 */
 	public void hideCard()
 	{
-		
+		if (cardStack.size() == 0)
+			return;
+		cardStack.pop();
+		cardLayout.show(this, cardStack.peek());
 	}
 }

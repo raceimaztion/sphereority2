@@ -5,6 +5,7 @@ import actors.Animatible;
 import java.util.Vector;
 
 /**
+ * TODO: Move all of this functionality into the client game engine
  * This class manages timers and calling all objects that need to be updated every timer tick or are timers of their own
  * @author dvanhumb
  */
