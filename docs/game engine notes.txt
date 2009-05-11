@@ -13,3 +13,6 @@ careful when disposing of things when leaving games.
 constructor and several control methods (such as: join game, leave game, start local
 game, etc.). This also adds some difficulty to the system in that the network system
 will need to be pretty transparent.
+
+	The game engine itself must keep track of time and calling all the Actors
+to update their position and logic.

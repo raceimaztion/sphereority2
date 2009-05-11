@@ -7,6 +7,10 @@ package common;
 public interface MapConstants
 {
 	/**
+	 * Test: the character that represents a hole in the map
+	 */
+	public static final char CHAR_HOLE = '*';
+	/**
 	 * The character that represents a wall
 	 */
 	public static final char CHAR_WALL = '+';

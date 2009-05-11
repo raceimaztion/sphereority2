@@ -10,6 +10,10 @@ import common.*;
 public abstract class Actor implements ActorConstants
 {
 	/**
+	 * A link to the containing GameEngine
+	 */
+	private AbstractGameEngine gameEngine;
+	/**
 	 * The current position of this Actor
 	 */
 	private Position position;
@@ -30,6 +34,12 @@ public abstract class Actor implements ActorConstants
      */
     private byte team;
 	
+    public Actor(AbstractGameEngine engine)
+    {
+    	this();
+    	gameEngine = engine;
+    }
+    
 	public Actor()
 	{
 		position = new Position();
@@ -169,5 +179,14 @@ public abstract class Actor implements ActorConstants
     public void accelerate(Position p, float dTime)
     {
     	velocity = velocity.move(p, dTime);
+    }
+    
+    /**
+     * Find the GameEngine containing this Actor
+     * @return  The GameEngine this Actor is in
+     */
+    public AbstractGameEngine getGameEngine()
+    {
+    	return gameEngine;
     }
 }

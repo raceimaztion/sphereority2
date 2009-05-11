@@ -6,7 +6,7 @@ import javax.swing.border.*;
 
 public class MapListRenderer extends Box implements ListCellRenderer
 {
-	private static final long serialVersionUID = 239875L;
+	private static final long serialVersionUID = 2390875L;
 	
 	private JLabel label1, label2;
 	private Border focus, nofocus;
