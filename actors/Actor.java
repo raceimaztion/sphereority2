@@ -33,11 +33,24 @@ public abstract class Actor implements ActorConstants
      * The team to which this Actor belongs
      */
     private byte team;
+    /**
+     * This controls how this Actor moves
+     * If this is null, the Actor will not move
+     */
+    private AbstractMotion motionControl;
+    /**
+     * How heavy this Actor is
+     */
+    private float weight;
 	
+    
     public Actor(AbstractGameEngine engine)
     {
     	this();
     	gameEngine = engine;
+    	
+    	if (this instanceof Animatible)
+    		gameEngine.addAnimatible((Animatible)this);
     }
     
 	public Actor()
@@ -61,9 +74,6 @@ public abstract class Actor implements ActorConstants
     private void setup()
     {
     	needsRemoving = false;
-    	
-    	if (this instanceof Animatible)
-    		timers.TimerSystem.getTimerSystem().addTimer((Animatible)this);
     }
     
     /**
@@ -72,6 +82,9 @@ public abstract class Actor implements ActorConstants
     public void dispose()
     {
     	// If we're Animatible, remove us from the timer system
+    	if ((this instanceof Animatible) && (gameEngine != null))
+    		gameEngine.removeAnimatible((Animatible)this);
+    		
     	// If we're Intelligent, remove us from the GameEngine's intelligence list
     }
     
@@ -153,22 +166,13 @@ public abstract class Actor implements ActorConstants
     }
     
     /**
-     * Move this Actor in a direction
-     * @param dist  The direction to move by
-     * @param dTime  The amount of time that's elapsed since last timer tick
-     */
-    public void move(Position dist, float dTime)
-    {
-       position = position.move(dist, dTime); 
-    }
-    
-    /**
-     * Apply the current velocity to this Actor's Position
+     * Move the Actor with the current AbstractMotion
      * @param dTime  The amount of time that elapsed since the last timer tick
      */
     public void move(float dTime)
     {
-        move(velocity, dTime);
+    	if (motionControl != null)
+    		motionControl.moveActor(this, dTime);
     }
     
     /**
@@ -178,7 +182,8 @@ public abstract class Actor implements ActorConstants
      */
     public void accelerate(Position p, float dTime)
     {
-    	velocity = velocity.move(p, dTime);
+    	if (motionControl != null)
+    		motionControl.accelerateActor(this, p, dTime);
     }
     
     /**
@@ -189,4 +194,61 @@ public abstract class Actor implements ActorConstants
     {
     	return gameEngine;
     }
+    
+    /**
+     * The object that's currently controlling this Actor's motion
+     * @return The AbstractMotion this Actor is using
+     */
+	public AbstractMotion getMotionControl()
+	{
+		return motionControl;
+	}
+	
+	/**
+	 * @param motionControl  The AbstractMotion this Actor should use
+	 */
+	public void setMotionControl(AbstractMotion motionControl)
+	{
+		this.motionControl = motionControl;
+	}
+	
+	/**
+	 * @return  This Actor's weight
+	 */
+	public float getWeight()
+	{
+		return weight;
+	}
+	
+	/**
+	 * @param weight  This Actor's new weight
+	 */
+	public void setWeight(float weight)
+	{
+		this.weight = weight;
+	}
+	
+	/**
+	 * @param position  The new position this Actor should have
+	 */
+	protected void setPosition(Position position)
+	{
+		this.position = position;
+	}
+	
+	/**
+	 * @param velocity  The new speed this Actor should have
+	 */
+	protected void setVelocity(Position velocity)
+	{
+		this.velocity = velocity;
+	}
+	
+	/**
+	 * @param team  The team this Actor should be on
+	 */
+	public void setTeam(byte team)
+	{
+		this.team = team;
+	}
 }

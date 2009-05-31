@@ -1,10 +1,23 @@
 package actors;
 
-/**
- * This indicates that a particular Actor is a player
- * @author dvanhumb
- */
-public interface Player extends Animatible
+import common.*;
+
+public abstract class Player extends Actor
 {
-	public String getName();
+	/**
+	 * The name of this Player
+	 */
+	private String name;
+	
+	public Player(AbstractGameEngine gameEngine, String name)
+	{
+		super(gameEngine);
+		
+		this.name = name;
+	}
+	
+	public String getName()
+	{
+		return name;
+	}
 }

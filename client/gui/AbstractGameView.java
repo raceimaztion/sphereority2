@@ -21,6 +21,13 @@ public abstract class AbstractGameView extends CardComponent
 	
 	public void paintChildren(Graphics g)
 	{
-		renderView((Graphics2D) g);
+		try
+		{
+			renderView((Graphics2D) g);
+		}
+		catch(Throwable er)
+		{
+			er.printStackTrace();
+		}
 	}
 }
