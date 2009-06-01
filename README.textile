@@ -9,9 +9,11 @@ A rewrite of the original "Sphereority":http://github.com/sphereority/sphereorit
 
 h2. Sphereority Server
 
+Not written yet.
 
 h2. Sphereority Client
 
+Not complete enough yet.
 
 h2. Map Editor
 
