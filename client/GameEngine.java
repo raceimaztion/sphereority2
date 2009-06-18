@@ -1,7 +1,7 @@
 package client;
 
 import actors.*;
-import common.*;
+//import common.*;
 import timers.*;
 
 import java.net.ConnectException;
@@ -17,10 +17,6 @@ public class GameEngine
 	 * The list of all current Actors
 	 */
 	private Vector<Actor> actorList;
-	/**
-	 * The current game map
-	 */
-	private GameMap map;
 	/**
 	 * A list of all Animatible objects
 	 */
@@ -42,7 +38,6 @@ public class GameEngine
 		actorList = new Vector<Actor>();
 		timerListAnimatibles = new Vector<Animatible>();
 		timerListGameTimers = new Vector<GameTimer>();
-		map = null;
 		
 		running = false;
 	}
@@ -87,14 +82,6 @@ public class GameEngine
 	public Vector<Actor> getActorList()
 	{
 		return actorList;
-	}
-	
-	/**
-	 * @return  The current GameMap 
-	 */
-	public GameMap getCurrentMap()
-	{
-		return map;
 	}
 	
 	/**

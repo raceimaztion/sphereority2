@@ -10,6 +10,10 @@ import java.util.Vector;
 public abstract class AbstractGameEngine
 {
 	/**
+	 * The current map
+	 */
+	protected GameMap map;
+	/**
 	 * The list of Animatibles
 	 */
 	protected Vector<Animatible> listAnimatibles;
@@ -30,5 +34,14 @@ public abstract class AbstractGameEngine
 	public void removeAnimatible(Animatible a)
 	{
 		listAnimatibles.remove(a);
+	}
+	
+	/**
+	 * Get the current map
+	 * @return
+	 */
+	public GameMap getMap()
+	{
+		return null;
 	}
 }
