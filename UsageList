@@ -1,0 +1,103 @@
+actors.Animatible:
+	(none)
+
+actors.Player:
+	(none)
+
+client.gui.CardComponent:
+	(none)
+
+common.ActorConstants:
+	(none)
+
+common.FlagPoint:
+	(none)
+
+common.MapConstants:
+	(none)
+
+common.Position:
+	(none)
+
+common.SpawnPoint:
+	(none)
+
+common.gui.MapListRenderer:
+	(none)
+
+settings.SettingsListener:
+	(none)
+
+timers.GameTimer:
+	(none)
+
+tools.mapeditor.MapCellRenderer:
+	(none)
+
+actors.Actor:
+	ActorConstants
+	AbstractGameEngine
+	Position
+
+actors.WeightedActor:
+	Actor
+	Position
+
+client.GameEngine:
+	Actor
+	Animatible
+	GameTimer
+
+client.gui.AbstractGameView:
+	CardComponent
+
+client.gui.CardPanel:
+	CardComponent
+
+common.AbstractGameEngine:
+	Animatible
+
+common.GameMap:
+	MapConstants
+	SpawnPoint
+	FlagPoint
+
+common.gui.MapChooser:
+	GameMap
+	MapListRenderer
+
+settings.Settings:
+	SettingsListener
+
+timers.CountdownTimer:
+	GameTimer
+
+timers.CountupTimer:
+	GameTimer
+
+timers.TimerSystem:
+	GameTimer
+	Animatible
+
+tools.mapeditor.EditableMap:
+	GameMap
+	MapConstants
+
+tools.mapeditor.MapAlterationListener:
+	EditableMap
+
+tools.mapeditor.MapEditor:
+	EditableMap
+	MapView
+	NewMapDialog
+	MapChooser
+
+tools.mapeditor.MapView:
+	EditableMap
+	MapConstants
+	MapAlterationListener
+	MapCellRenderer
+
+tools.mapeditor.NewMapDialog:
+	EditableMap
+	
