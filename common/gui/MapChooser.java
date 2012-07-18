@@ -120,6 +120,8 @@ public class MapChooser implements ActionListener
 	{
 		if (singleton == null)
 			singleton = new MapChooser();
+		else
+			singleton.updateMapList();
 		
 		singleton.show(parent);
 		

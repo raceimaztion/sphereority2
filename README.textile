@@ -19,13 +19,9 @@ h2. Map Editor
 
 To compile the Map Editor
 
-<pre>
-cd sphereority2
-javac tools/mapeditor/MapEditor.java
-</pre>
+<pre>cd sphereority2
+javac tools/mapeditor/MapEditor.java</pre>
 
 To run the Map Editor
-<pre>
-java tools.mapeditor.MapEditor
-</pre>
+<pre>java tools.mapeditor.MapEditor</pre>
 

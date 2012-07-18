@@ -88,7 +88,7 @@ public class MapEditor implements ActionListener, WindowListener
 		editMenu.add(menuPaste);
 		
 		window.pack();
-		window.setLocationByPlatform(true);
+		window.setLocationRelativeTo(null);
 		mapView.requestFocusInWindow();
 	}
 	

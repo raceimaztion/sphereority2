@@ -57,8 +57,8 @@ public class GameEngine
 	/**
 	 * Attempt to start a local game.
 	 * TODO: This will eventually need a long list of parameters:
-	 *   + server name
-	 *   + server password
+	 *   + server title
+	 *   + server password (optional)
 	 *   + map name to use
 	 *   + any other parameters you want to set
 	 */
